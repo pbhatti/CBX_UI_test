@@ -242,7 +242,7 @@ export function InitiativesTable() {
         <TableHeaderCell>Budget</TableHeaderCell>
         <TableHeaderCell>Created By</TableHeaderCell>
         <TableHeaderCell>Last Modified</TableHeaderCell>
-        <TableHeaderCell showSort={false} className="sticky right-0 bg-white z-20 border-l border-[#F6F6F6]"></TableHeaderCell>
+        <TableHeaderCell showSort={false} className="sticky right-0 bg-white z-20 border-l border-[#F6F6F6]">{""}</TableHeaderCell>
       </div>
 
       {/* Table Body */}
