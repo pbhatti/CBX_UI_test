@@ -1,8 +1,9 @@
 "use client"
 
-import { useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 import Image from "next/image"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 import {
   Search,
   Home,
@@ -22,13 +23,16 @@ interface NavigationSidebarProps {
   isCollapsed: boolean
   onToggle: () => void
   onBackgroundGradientClick?: () => void
+  currentPage?: "initiatives" | "campaigns"
 }
 
 export function NavigationSidebar({
   isCollapsed,
   onToggle,
   onBackgroundGradientClick,
+  currentPage,
 }: NavigationSidebarProps) {
+  const pathname = usePathname()
   return (
     <motion.div
       initial={false}
@@ -106,9 +110,16 @@ export function NavigationSidebar({
           imageSrc="/images/initiatives.svg"
           label="Initiatives"
           isCollapsed={isCollapsed}
-          active
+          href="/"
+          active={pathname === "/" || currentPage === "initiatives"}
         />
-        <NavItem imageSrc="/images/campaign.svg" label="Campaigns" isCollapsed={isCollapsed} />
+        <NavItem 
+          imageSrc="/images/campaign.svg" 
+          label="Campaigns" 
+          isCollapsed={isCollapsed}
+          href="/campaigns"
+          active={pathname?.startsWith("/campaigns") || currentPage === "campaigns"}
+        />
       </div>
 
       <div className="border-t border-[#f6f6f6]" />
@@ -183,6 +194,7 @@ interface NavItemProps {
   badge?: number
   hasChevron?: boolean
   onClick?: () => void
+  href?: string
 }
 
 function NavItem({
@@ -194,16 +206,10 @@ function NavItem({
   badge,
   hasChevron,
   onClick,
+  href,
 }: NavItemProps) {
-  return (
-    <div
-      onClick={onClick}
-      className={cn(
-        "flex items-center gap-3 px-2 py-2 rounded-lg transition-colors cursor-pointer relative",
-        active ? "bg-[#eaeaea]" : "hover:bg-[#eaeaea]",
-        isCollapsed && "justify-center p-2 gap-0 h-8 w-8"
-      )}
-    >
+  const content = (
+    <>
       {imageSrc ? (
         <Image
           src={imageSrc}
@@ -231,6 +237,26 @@ function NavItem({
       {isCollapsed && badge && (
         <span className="absolute top-1 right-1 w-2 h-2 bg-[#e51313] rounded-full" />
       )}
+    </>
+  )
+
+  const className = cn(
+    "flex items-center gap-3 px-2 py-2 rounded-lg transition-colors cursor-pointer relative",
+    active ? "bg-[#eaeaea]" : "hover:bg-[#eaeaea]",
+    isCollapsed && "justify-center p-2 gap-0 h-8 w-8"
+  )
+
+  if (href) {
+    return (
+      <Link href={href} className={className} onClick={onClick}>
+        {content}
+      </Link>
+    )
+  }
+
+  return (
+    <div onClick={onClick} className={className}>
+      {content}
     </div>
   )
 }

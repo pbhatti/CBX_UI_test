@@ -2,29 +2,26 @@
 
 import { useState } from "react"
 import { NavigationSidebar } from "@/components/navigation-sidebar"
-import { Header } from "@/components/header"
-import { FilterBar } from "@/components/filter-bar"
-import { InitiativesTable } from "@/components/initiatives-table"
-import { Pagination } from "@/components/pagination"
-import { CreateInitiativeForm } from "@/components/create-initiative-form"
+import { CampaignHeader } from "@/components/campaign-header"
+import { JourneyCanvas } from "@/components/journey-canvas"
 import { BackgroundGradient } from "@/components/background-gradient"
 import { motion, AnimatePresence } from "framer-motion"
 
-export default function Home() {
+export default function CampaignsPage() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [isFormOpen, setIsFormOpen] = useState(false)
   const [isBackgroundGradientOpen, setIsBackgroundGradientOpen] = useState(false)
   const [isNavHidden, setIsNavHidden] = useState(false)
+  const [isLinkedInAd4Configured, setIsLinkedInAd4Configured] = useState(false)
 
   return (
-    <div className="flex h-screen overflow-hidden bg-white">
+    <div className="flex h-screen overflow-hidden bg-[#F6F6F6]">
       {!isNavHidden && (
         <>
           <NavigationSidebar
             isCollapsed={isSidebarCollapsed}
             onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
             onBackgroundGradientClick={() => setIsBackgroundGradientOpen(true)}
+            currentPage="campaigns"
           />
           <motion.div
             initial={false}
@@ -33,31 +30,11 @@ export default function Home() {
             }}
             className="flex-1 flex flex-col overflow-hidden transition-all duration-300"
           >
-            <Header onCreateInitiative={() => setIsFormOpen(true)} />
-            <div className="flex-1 overflow-auto">
-              <div className="px-6 pb-6 pt-0">
-                <div className="bg-white rounded-2xl border border-[#DEDEDE] overflow-hidden">
-                  <FilterBar />
-                  <div className="overflow-x-auto w-full">
-                    <InitiativesTable />
-                  </div>
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={5}
-                    onPageChange={setCurrentPage}
-                  />
-                </div>
-              </div>
-            </div>
+            <CampaignHeader />
+            <JourneyCanvas isLinkedInAd4Configured={isLinkedInAd4Configured} />
           </motion.div>
         </>
       )}
-      
-      <AnimatePresence>
-        {isFormOpen && (
-          <CreateInitiativeForm onClose={() => setIsFormOpen(false)} />
-        )}
-      </AnimatePresence>
       
       <AnimatePresence>
         {isBackgroundGradientOpen && (
@@ -65,6 +42,7 @@ export default function Home() {
             onClose={() => {
               setIsBackgroundGradientOpen(false)
               setIsNavHidden(false)
+              setIsLinkedInAd4Configured(true)
             }} 
             onHideNav={() => setIsNavHidden(true)}
           />
