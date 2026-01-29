@@ -700,7 +700,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                 backgroundSize: '20px 20px'
               }}
             >
-              <div className="h-full overflow-x-auto overflow-y-auto p-6" style={{ verticalAlign: 'bottom' }}>
+              <div className="h-full overflow-x-auto overflow-y-auto p-6 flex justify-center items-center">
                 <div className="mx-auto w-full max-w-[1200px]">
                   <div className="flex gap-6" style={{ verticalAlign: 'middle' }}>
                   {/* Apple Column */}
@@ -1492,16 +1492,16 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                 >
                   <div className="px-6 py-6 h-full min-w-0" style={{ borderWidth: 0, borderColor: 'transparent', borderStyle: 'none', borderImage: 'none' }}>
                     <div
-                      className={`max-w-8xl mx-auto flex flex-row gap-10 h-full items-stretch transition-[justify-content] duration-[350ms] ease-[cubic-bezier(0.4,0,0.2,1)] ${showReferences ? "justify-start" : "justify-center"} min-w-0`}
+                      className={`max-w-8xl mx-auto flex flex-row gap-10 h-full items-center transition-[justify-content] duration-[800ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] ${showReferences ? "justify-start" : "justify-center"} min-w-0`}
                       style={{ width: "100%" }}
                     >
                       {/* Apple Content Card - center by default, slides left when references shown */}
                       <motion.div
                         layout
-                        transition={{ type: "tween", duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-                        className="flex-shrink-0 w-[400px] h-full"
+                        transition={{ type: "tween", duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
+                        className="flex-shrink-0 w-[400px] h-full flex flex-col items-center justify-center"
                       >
-                        <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center justify-between mb-4 w-full">
                           <h3 className="text-sm font-medium text-[#303030]">Content for: <span className="font-bold">Apple</span></h3>
                           <Button 
                             variant="outline"
@@ -1511,7 +1511,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                             {showReferences ? "Hide references" : "View references"}
                           </Button>
                         </div>
-                        <div className="bg-white rounded-lg border border-[#eaeaea] p-4 shadow-sm hover:shadow-md transition-shadow h-[675px] flex flex-col min-h-0">
+                        <div className="bg-white rounded-lg border border-[#eaeaea] p-4 shadow-sm hover:shadow-md transition-shadow h-[675px] flex flex-col min-h-0 w-full">
                         {/* Ad Preview Content */}
                         <div className="space-y-3 flex-1 min-h-0 overflow-auto">
                           {/* Header */}
@@ -1599,12 +1599,12 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                           marginLeft: showReferences ? 0 : -40,
                           opacity: showReferences ? 1 : 0,
                         }}
-                        transition={{ type: "tween", duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
-                        className={`flex-shrink-0 overflow-hidden ${!showReferences ? "pointer-events-none" : ""}`}
+                        transition={{ type: "tween", duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
+                        className={`flex-shrink-0 overflow-hidden flex justify-center items-center pt-6 ${!showReferences ? "pointer-events-none" : ""}`}
                         style={{ height: "100%", maxWidth: "100%" }}
                       >
                         <div className="overflow-x-auto -mx-6 px-6 w-full min-w-[1200px]">
-                        <div className="flex flex-row flex-nowrap gap-6 pb-4" style={{ width: 'max-content' }}>
+                        <div className="flex flex-row flex-nowrap gap-6 pb-4 justify-center" style={{ width: 'max-content' }}>
                           {/* Reference Cards */}
                           {["Tesla", "Reliance", "Flipkart", "Open AI", "Unacademy"].map((companyName, index) => (
                               <div key={index} className="flex-shrink-0 w-[400px]">
