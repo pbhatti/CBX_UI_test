@@ -1,14 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { NavigationSidebar } from "@/components/navigation-sidebar"
-import { Header } from "@/components/header"
-import { FilterBar } from "@/components/filter-bar"
-import { InitiativesTable } from "@/components/initiatives-table"
-import { Pagination } from "@/components/pagination"
+import { AppLayout } from "@/components/layout"
+import { InitiativesView } from "@/components/layout"
 import { CreateInitiativeForm } from "@/components/create-initiative-form"
 import { BackgroundGradient } from "@/components/background-gradient"
-import { motion, AnimatePresence } from "framer-motion"
+import { AnimatePresence } from "framer-motion"
 
 export default function Home() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
@@ -18,59 +15,39 @@ export default function Home() {
   const [isNavHidden, setIsNavHidden] = useState(false)
 
   return (
-    <div className="flex h-screen overflow-hidden bg-white">
-      {!isNavHidden && (
-        <>
-          <NavigationSidebar
-            isCollapsed={isSidebarCollapsed}
-            onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-            onBackgroundGradientClick={() => setIsBackgroundGradientOpen(true)}
-          />
-          <motion.div
-            initial={false}
-            animate={{
-              marginLeft: isSidebarCollapsed ? 64 : 240,
-            }}
-            className="flex-1 flex flex-col overflow-hidden transition-all duration-300"
-          >
-            <Header onCreateInitiative={() => setIsFormOpen(true)} />
-            <div className="flex-1 overflow-auto">
-              <div className="px-6 pb-6 pt-0">
-                <div className="bg-white rounded-2xl border border-[#DEDEDE] overflow-hidden">
-                  <FilterBar />
-                  <div className="overflow-x-auto w-full">
-                    <InitiativesTable />
-                  </div>
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={5}
-                    onPageChange={setCurrentPage}
-                  />
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </>
-      )}
-      
+    <>
+      <AppLayout
+        showLeftNav={!isNavHidden}
+        isLeftNavCollapsed={isSidebarCollapsed}
+        onLeftNavToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        onBackgroundGradientClick={() => setIsBackgroundGradientOpen(true)}
+        currentPage="initiatives"
+      >
+        <InitiativesView
+          onCreateInitiative={() => setIsFormOpen(true)}
+          currentPage={currentPage}
+          totalPages={5}
+          onPageChange={setCurrentPage}
+        />
+      </AppLayout>
+
       <AnimatePresence>
         {isFormOpen && (
           <CreateInitiativeForm onClose={() => setIsFormOpen(false)} />
         )}
       </AnimatePresence>
-      
+
       <AnimatePresence>
         {isBackgroundGradientOpen && (
-          <BackgroundGradient 
+          <BackgroundGradient
             onClose={() => {
               setIsBackgroundGradientOpen(false)
               setIsNavHidden(false)
-            }} 
+            }}
             onHideNav={() => setIsNavHidden(true)}
           />
         )}
       </AnimatePresence>
-    </div>
+    </>
   )
 }
-

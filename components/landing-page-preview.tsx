@@ -56,7 +56,7 @@ export function LandingPagePreview() {
           <img 
             alt="Person coding with data visualizations" 
             className="absolute max-w-none object-cover rounded-[16px] w-full h-full" 
-            src="/images/image1.png"
+            src="/assets/content-panels/image1.png"
             onError={(e) => {
               // Fallback to a placeholder if image fails to load
               const target = e.target as HTMLImageElement

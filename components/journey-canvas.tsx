@@ -371,7 +371,7 @@ export function JourneyCanvas({ isLinkedInAd4Configured = false }: JourneyCanvas
   return (
     <div 
       ref={containerRef}
-      className="flex-1 relative overflow-auto bg-[#F6F6F6]"
+      className="min-h-0 flex-1 w-full h-full relative overflow-auto bg-[#F6F6F6] min-h-[400px]"
       onWheel={handleWheel}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
@@ -392,7 +392,7 @@ export function JourneyCanvas({ isLinkedInAd4Configured = false }: JourneyCanvas
 
       {/* Canvas with Dotted Grid */}
       <div 
-        className="w-full h-full relative overflow-auto"
+        className="w-full h-full min-h-full min-h-0 relative overflow-auto"
         style={{
           backgroundImage: `radial-gradient(circle, #DEDEDE 1px, transparent 1px)`,
           backgroundSize: '20px 20px',
@@ -432,7 +432,7 @@ export function JourneyCanvas({ isLinkedInAd4Configured = false }: JourneyCanvas
                     <div className="flex items-center gap-3">
                       <div className="border border-[#EAEAEA] rounded-lg p-3 flex items-center justify-center shrink-0">
                         <Image
-                          src="/images/LinkedIn.svg"
+                          src="/assets/global/LinkedIn.svg"
                           alt="LinkedIn"
                           width={24}
                           height={24}
@@ -497,7 +497,7 @@ export function JourneyCanvas({ isLinkedInAd4Configured = false }: JourneyCanvas
                     <div className="flex items-center gap-3">
                       <div className="border border-[#EAEAEA] rounded-lg p-3 flex items-center justify-center shrink-0">
                         <Image
-                          src="/images/GoogleAds.svg"
+                          src="/assets/global/GoogleAds.svg"
                           alt="Google Ads"
                           width={24}
                           height={24}
@@ -537,7 +537,7 @@ export function JourneyCanvas({ isLinkedInAd4Configured = false }: JourneyCanvas
                         <div className="flex items-center gap-3">
                           <div className="border border-[#EAEAEA] rounded-lg p-3 flex items-center justify-center shrink-0">
                             <Image
-                              src="/images/LinkedIn.svg"
+                              src="/assets/global/LinkedIn.svg"
                               alt="LinkedIn"
                               width={24}
                               height={24}
@@ -583,7 +583,7 @@ export function JourneyCanvas({ isLinkedInAd4Configured = false }: JourneyCanvas
                       <div className="flex items-center gap-3">
                         <div className="border border-[#EAEAEA] rounded-lg p-3 flex items-center justify-center shrink-0">
                           <Image
-                            src="/images/LinkedIn.svg"
+                            src="/assets/global/LinkedIn.svg"
                             alt="LinkedIn"
                             width={24}
                             height={24}
@@ -636,7 +636,7 @@ export function JourneyCanvas({ isLinkedInAd4Configured = false }: JourneyCanvas
                             <div className="border border-[#EAEAEA] rounded-lg p-3 flex items-center justify-center shrink-0">
                               {node.type === 'linkedin' ? (
                                 <Image
-                                  src="/images/LinkedIn.svg"
+                                  src="/assets/global/LinkedIn.svg"
                                   alt="LinkedIn"
                                   width={24}
                                   height={24}
@@ -644,7 +644,7 @@ export function JourneyCanvas({ isLinkedInAd4Configured = false }: JourneyCanvas
                                 />
                               ) : node.type === 'google' ? (
                                 <Image
-                                  src="/images/GoogleAds.svg"
+                                  src="/assets/global/GoogleAds.svg"
                                   alt="Google Ads"
                                   width={24}
                                   height={24}
@@ -710,7 +710,7 @@ export function JourneyCanvas({ isLinkedInAd4Configured = false }: JourneyCanvas
                       >
                         <div className="w-6 h-6 shrink-0">
                           <Image
-                            src="/images/LinkedIn.svg"
+                            src="/assets/global/LinkedIn.svg"
                             alt="LinkedIn"
                             width={24}
                             height={24}
@@ -727,7 +727,7 @@ export function JourneyCanvas({ isLinkedInAd4Configured = false }: JourneyCanvas
                       >
                         <div className="w-6 h-6 shrink-0">
                           <Image
-                            src="/images/GoogleAds.svg"
+                            src="/assets/global/GoogleAds.svg"
                             alt="Google Ads"
                             width={24}
                             height={24}
@@ -768,7 +768,7 @@ export function JourneyCanvas({ isLinkedInAd4Configured = false }: JourneyCanvas
                     <div className="flex items-center gap-3">
                       <div className="border border-[#EAEAEA] rounded-lg p-3 flex items-center justify-center shrink-0">
                         <Image
-                          src="/images/LinkedIn.svg"
+                          src="/assets/global/LinkedIn.svg"
                           alt="LinkedIn"
                           width={24}
                           height={24}

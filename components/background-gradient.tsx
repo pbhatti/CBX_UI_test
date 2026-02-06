@@ -50,6 +50,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
   const [adsCount, setAdsCount] = useState(230)
   const [generateGeneric, setGenerateGeneric] = useState("yes")
   const [destination, setDestination] = useState("ai-generated")
+  const [editTopbarOption, setEditTopbarOption] = useState<"Edge-aligned Divider" | "Surface-based Separation" | "Framed Side Pane">("Edge-aligned Divider")
 
   useEffect(() => {
     // Hide navigation after 8 seconds
@@ -106,7 +107,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
             {/* LinkedIn Icon */}
             <div className="h-8 w-8 flex items-center justify-center shrink-0">
               <Image
-                src="/images/LinkedIn.svg"
+                src="/assets/global/LinkedIn.svg"
                 alt="LinkedIn"
                 width={32}
                 height={32}
@@ -144,7 +145,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
               className="bg-[#f6f6f6] h-10 w-10 flex items-center justify-center rounded-lg hover:bg-[#eaeaea] transition-colors relative"
             >
               <Image
-                src="/images/message-square.svg"
+                src="/assets/global/message-square.svg"
                 alt="Messages"
                 width={16}
                 height={16}
@@ -161,7 +162,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
               className="bg-[#f6f6f6] h-10 w-10 flex items-center justify-center rounded-lg hover:bg-[#eaeaea] transition-colors"
             >
               <Image
-                src="/images/settings-2.svg"
+                src="/assets/global/settings-2.svg"
                 alt="Settings"
                 width={16}
                 height={16}
@@ -1419,6 +1420,28 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                     <X className="h-5 w-5 text-white" />
                   </button>
                   <span className="text-white text-lg font-semibold">Edit Content</span>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        className="inline-flex items-center justify-center gap-2 rounded-md bg-white text-black hover:bg-white/90 h-9 px-4 text-sm font-medium border-0"
+                      >
+                        {editTopbarOption}
+                        <ChevronDown className="h-4 w-4" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="min-w-[8rem]">
+                      <DropdownMenuItem onClick={() => setEditTopbarOption("Edge-aligned Divider")}>
+                        Edge-aligned Divider
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setEditTopbarOption("Surface-based Separation")}>
+                        Surface-based Separation
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setEditTopbarOption("Framed Side Pane")}>
+                        Framed Side Pane
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
                 
                 <div className="flex items-center gap-4">
@@ -1481,7 +1504,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
 
                 {/* Grey Canvas with Dot Pattern */}
                 <div
-                  className="flex-1 overflow-y-auto overflow-x-hidden bg-[#F6F6F6]"
+                  className={`relative flex-1 flex flex-col overflow-y-auto bg-[#EAEAEA] min-h-0 ${showReferences ? "overflow-x-auto" : "overflow-x-hidden"}`}
                   style={{
                     backgroundImage: `
                       linear-gradient(to right, rgba(0,0,0,0.02) 1px, transparent 1px),
@@ -1490,10 +1513,56 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                     backgroundSize: '20px 20px'
                   }}
                 >
-                  <div className="px-6 py-6 h-full min-w-0" style={{ borderWidth: 0, borderColor: 'transparent', borderStyle: 'none', borderImage: 'none' }}>
+                  {/* View/Hide references: Edge-aligned Divider & Surface-based Separation use button; Framed Side Pane uses vertical strip */}
+                  {editTopbarOption !== "Framed Side Pane" && (
+                    <button
+                      type="button"
+                      onClick={() => setShowReferences(!showReferences)}
+                      className="absolute top-4 right-4 z-10 inline-flex items-center justify-center gap-2 rounded-lg bg-[#F6F6F6] text-[#303030] hover:bg-[#EAEAEA] border-0 shadow-none h-8 w-[160px] pl-3 py-2 text-xs font-medium transition-colors"
+                      style={{ background: 'unset' }}
+                    >
+                      <span className="text-[#303030] w-[100px]">
+                        {showReferences ? "Hide references" : "View references"}
+                      </span>
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[#F6F6F6] border border-[#EAEAEA]">
+                        <Image
+                          src={showReferences ? "/images/Icon%20Right.svg" : "/images/Icon%20Left.svg"}
+                          alt=""
+                          width={16}
+                          height={16}
+                          className="h-4 w-4"
+                        />
+                      </span>
+                    </button>
+                  )}
+                  {/* Framed Side Pane: vertical strip to toggle reference pane */}
+                  {editTopbarOption === "Framed Side Pane" && (
+                    <button
+                      type="button"
+                      onClick={() => setShowReferences(!showReferences)}
+                      className={`absolute right-0 bottom-0 z-10 w-10 h-full flex flex-col items-center justify-start pt-2 gap-[50px] transition-colors ${showReferences ? "bg-transparent hover:bg-transparent border-transparent" : "bg-[#EAEAEA] hover:bg-[#E0E0E0] border-l border-[#F6F6F6]"}`}
+                      aria-label={showReferences ? "Hide references" : "View references"}
+                    >
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[#F6F6F6] border border-[#D3D3D3]">
+                        <Image
+                          src={showReferences ? "/images/Icon%20Right.svg" : "/images/Icon%20Left.svg"}
+                          alt=""
+                          width={16}
+                          height={16}
+                          className="h-4 w-4"
+                        />
+                      </span>
+                      {!showReferences && (
+                        <span className="text-[#303030] text-xs font-medium whitespace-nowrap [writing-mode:vertical] [text-orientation:mixed] -rotate-[270deg] select-none">
+                          View references
+                        </span>
+                      )}
+                    </button>
+                  )}
+                  <div className="pl-6 py-0 flex-1 flex flex-col min-h-0 min-w-0" style={{ borderWidth: 0, borderColor: 'transparent', borderStyle: 'none', borderImage: 'none' }}>
                     <div
-                      className={`max-w-8xl mx-auto flex flex-row gap-10 h-full items-center transition-[justify-content] duration-[800ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] ${showReferences ? "justify-start" : "justify-center"} min-w-0`}
-                      style={{ width: "100%" }}
+                      className={`max-w-8xl mx-auto flex flex-row gap-10 flex-1 items-center transition-[justify-content] duration-[800ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] ${showReferences ? "justify-start" : "justify-center"} min-w-0 min-h-0`}
+                      style={{ width: "100%", ...(showReferences ? { minWidth: 964 } : {}) }}
                     >
                       {/* Apple Content Card - center by default, slides left when references shown */}
                       <motion.div
@@ -1501,15 +1570,20 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                         transition={{ type: "tween", duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
                         className="flex-shrink-0 w-[400px] h-full flex flex-col items-center justify-center"
                       >
-                        <div className="flex items-center justify-between mb-4 w-full">
-                          <h3 className="text-sm font-medium text-[#303030]">Content for: <span className="font-bold">Apple</span></h3>
-                          <Button 
-                            variant="outline"
-                            onClick={() => setShowReferences(!showReferences)}
-                            className="bg-[#F6F6F6] text-black hover:bg-[#EAEAEA] border-[#EAEAEA] shadow-sm h-8 px-3 text-xs font-medium rounded-md"
-                          >
-                            {showReferences ? "Hide references" : "View references"}
-                          </Button>
+                        <div className="flex items-center justify-between mb-2 w-full gap-3">
+                          <span className="text-xs font-medium text-[#5E5E5E] shrink-0">Apple</span>
+                          <div className="flex items-center gap-1.5 shrink-0 text-[#5E5E5E]">
+                            <span className="w-4 h-4 flex items-center justify-center shrink-0">
+                              <Image
+                                src="/images/message-square.svg"
+                                alt=""
+                                width={16}
+                                height={16}
+                                className="w-4 h-4 object-contain"
+                              />
+                            </span>
+                            <span className="text-xs font-medium">3</span>
+                          </div>
                         </div>
                         <div className="bg-white rounded-lg border border-[#eaeaea] p-4 shadow-sm hover:shadow-md transition-shadow h-[675px] flex flex-col min-h-0 w-full">
                         {/* Ad Preview Content */}
@@ -1590,28 +1664,54 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                       </div>
                       </motion.div>
                       
-                      {/* Horizontal Scrollable Container with References - slides in smoothly when toggled */}
+                      {/* Reference pane: slides in from the left edge of the trigger (right side) via translateX, extends to viewport right edge */}
                       <motion.div
-                        layout
                         initial={false}
                         animate={{
-                          width: showReferences ? "100%" : 0,
-                          marginLeft: showReferences ? 0 : -40,
-                          opacity: showReferences ? 1 : 0,
+                          flex: showReferences ? 1 : 0,
+                          width: showReferences ? "auto" : 0,
+                          minWidth: showReferences ? 0 : 0,
                         }}
                         transition={{ type: "tween", duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
-                        className={`flex-shrink-0 overflow-hidden flex justify-center items-center pt-6 ${!showReferences ? "pointer-events-none" : ""}`}
-                        style={{ height: "100%", maxWidth: "100%" }}
+                        className="flex-shrink-0 overflow-hidden min-w-0"
+                        style={{ height: "100%" }}
                       >
-                        <div className="overflow-x-auto -mx-6 px-6 w-full min-w-[1200px]">
-                        <div className="flex flex-row flex-nowrap gap-6 pb-4 justify-center" style={{ width: 'max-content' }}>
+                        <motion.div
+                          initial={false}
+                          animate={{ x: showReferences ? 0 : "100%" }}
+                          transition={{ type: "tween", duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
+                          className={`flex flex-col justify-stretch h-full w-full min-w-full ${!showReferences ? "pointer-events-none" : ""} ${showReferences ? "border-l border-[#D3D3D3]" : ""} ${editTopbarOption === "Surface-based Separation" ? "bg-[#F6F6F6]" : ""}`}
+                          style={{ minWidth: "100%" }}
+                        >
+                        {/* Framed Side Pane: clickable header to collapse reference pane */}
+                        {editTopbarOption === "Framed Side Pane" && (
+                          <button
+                            type="button"
+                            onClick={() => setShowReferences(false)}
+                            className="flex-shrink-0 flex items-center justify-between gap-2 h-12 px-4 bg-[#F6F6F6] border-b border-[#D3D3D3] text-[#303030] text-sm font-medium hover:bg-[#EAEAEA] transition-colors"
+                          >
+                            <span>Hide references</span>
+                          </button>
+                        )}
+                        <div className="overflow-x-auto -mx-6 pl-12 pr-6 w-full min-w-[1200px] pt-6 flex-1 min-h-0 flex items-start">
+                        <div className="flex flex-row flex-nowrap gap-6 pb-4 justify-center pt-12" style={{ width: 'max-content' }}>
                           {/* Reference Cards */}
                           {["Tesla", "Reliance", "Flipkart", "Open AI", "Unacademy"].map((companyName, index) => (
                               <div key={index} className="flex-shrink-0 w-[400px]">
-                                {/* Title with separator line */}
-                                <div className="mb-4">
-                                  <h3 className="text-sm font-medium text-[#303030] text-left mb-2">Content for: <span className="font-bold">{companyName}</span></h3>
-                                  <div className="border-t border-[#eaeaea]"></div>
+                                <div className="flex items-center justify-between mb-2 w-full gap-3">
+                                  <span className="text-xs font-medium text-[#5E5E5E] shrink-0">{companyName}</span>
+                                  <div className="flex items-center gap-1.5 shrink-0 text-[#5E5E5E]">
+                                    <span className="w-4 h-4 flex items-center justify-center shrink-0">
+                                      <Image
+                                        src="/images/message-square.svg"
+                                        alt=""
+                                        width={16}
+                                        height={16}
+                                        className="w-4 h-4 object-contain"
+                                      />
+                                    </span>
+                                    <span className="text-xs font-medium">3</span>
+                                  </div>
                                 </div>
                                 <div className="bg-white rounded-lg border border-[#eaeaea] p-4 shadow-sm hover:shadow-md transition-shadow">
                                   {/* Ad Preview Content */}
@@ -1695,6 +1795,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                             ))}
                         </div>
                         </div>
+                        </motion.div>
                       </motion.div>
                     </div>
                   </div>
