@@ -2,7 +2,7 @@
 
 import { X, ChevronDown, Settings, MoreVertical, PanelLeftClose, ChevronRight, Search as SearchIcon, Sparkles, AlertTriangle } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { Input } from "@/components/ui/input"
@@ -51,6 +51,33 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
   const [generateGeneric, setGenerateGeneric] = useState("yes")
   const [destination, setDestination] = useState("ai-generated")
   const [editTopbarOption, setEditTopbarOption] = useState<"Edge-aligned Divider" | "Surface-based Separation" | "Framed Side Pane">("Edge-aligned Divider")
+  const [isFramedPaneAnimating, setIsFramedPaneAnimating] = useState(false)
+  const framedPaneTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  /** Framed Side Pane: reference pane open width (px). Only this region's width changes. */
+  const FRAMED_REFERENCE_PANE_WIDTH_PX = 524
+
+  const handleFramedPaneToggle = () => {
+    if (editTopbarOption !== "Framed Side Pane") return
+    if (framedPaneTimeoutRef.current) clearTimeout(framedPaneTimeoutRef.current)
+    setIsFramedPaneAnimating(true)
+    setShowReferences((prev) => !prev)
+    framedPaneTimeoutRef.current = setTimeout(() => {
+      setIsFramedPaneAnimating(false)
+      framedPaneTimeoutRef.current = null
+    }, 800)
+  }
+
+  const handleFramedPaneClose = () => {
+    if (editTopbarOption !== "Framed Side Pane" || !showReferences) return
+    if (framedPaneTimeoutRef.current) clearTimeout(framedPaneTimeoutRef.current)
+    setIsFramedPaneAnimating(true)
+    setShowReferences(false)
+    framedPaneTimeoutRef.current = setTimeout(() => {
+      setIsFramedPaneAnimating(false)
+      framedPaneTimeoutRef.current = null
+    }, 800)
+  }
 
   useEffect(() => {
     // Hide navigation after 8 seconds
@@ -1502,7 +1529,206 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                   </div>
                 </div>
 
-                {/* Grey Canvas with Dot Pattern */}
+                {/* EditorLayout: LeftChat | CanvasWrapper | ReferencePane (Framed Side Pane) OR single grey canvas (other modes) */}
+                {editTopbarOption === "Framed Side Pane" ? (
+                <div className="flex-1 flex min-w-0 overflow-hidden">
+                  {/* CanvasWrapper: owns canvas space; Apple frame centers in available width */}
+                  <div
+                    className="flex-1 flex flex-col min-w-0 overflow-y-auto overflow-x-hidden bg-[#EAEAEA] min-h-0"
+                    style={{
+                      backgroundImage: `
+                        linear-gradient(to right, rgba(0,0,0,0.02) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(0,0,0,0.02) 1px, transparent 1px)
+                      `,
+                      backgroundSize: '20px 20px'
+                    }}
+                  >
+                    <div className="flex-1 flex items-center justify-center min-h-0 px-6">
+                      {/* AppleFrame: centered in canvas; reflows when ReferencePane opens */}
+                      <div className="flex-shrink-0 w-[400px] h-full flex flex-col items-center justify-center max-h-full">
+                        <div className="flex items-center justify-between mb-2 w-full gap-3">
+                          <span className="text-xs font-medium text-[#5E5E5E] shrink-0">Apple</span>
+                          <div className="flex items-center gap-1.5 shrink-0 text-[#5E5E5E]">
+                            <span className="w-4 h-4 flex items-center justify-center shrink-0">
+                              <Image src="/images/message-square.svg" alt="" width={16} height={16} className="w-4 h-4 object-contain" />
+                            </span>
+                            <span className="text-xs font-medium">3</span>
+                          </div>
+                        </div>
+                        <div className="bg-white rounded-lg border border-[#eaeaea] p-4 shadow-sm hover:shadow-md transition-shadow h-[675px] flex flex-col min-h-0 w-full">
+                          <div className="space-y-3 flex-1 min-h-0 overflow-auto">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 bg-[#0077b5] rounded flex items-center justify-center"><span className="text-white text-xs font-semibold">T.</span></div>
+                                <span className="text-xs text-[#666666]">131,229 followers</span>
+                                <span className="text-xs text-[#666666]">·</span>
+                                <span className="text-xs text-[#666666]">Promoted</span>
+                              </div>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <button className="p-1 hover:bg-[#f6f6f6] rounded" aria-label="Open options"><MoreVertical className="h-4 w-4 text-[#666666]" /></button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => setIsEditModeOpen(true)}>Edit</DropdownMenuItem>
+                                  <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                            <div className="space-y-2">
+                              <p className="text-sm text-[#121212] font-medium">Spending more time reacting than driving results? You&apos;re not alone.</p>
+                              <p className="text-sm text-[#121212]">You&apos;re not alone. Data teams report spending less than half of their work week actually analyzing data. At CVS, ThoughtSpot helped reduce time-to-insight by 60%. With GenAI, you can finally focus on the strategic work that moves the needle.</p>
+                              <p className="text-sm text-[#0077b5] font-medium">See how to reclaim control of your career. Download the Dashboards are Dead, Gen AI edition.</p>
+                            </div>
+                            <div className="space-y-2">
+                              <div className="relative bg-black rounded-lg overflow-hidden">
+                                <div className="p-6">
+                                  <div className="text-white space-y-2 mb-4">
+                                    <h4 className="text-2xl font-bold">Dashboards are dead</h4>
+                                    <p className="text-lg">GenAI is the last nail in the coffin</p>
+                                  </div>
+                                  <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm px-2 py-1 rounded text-xs text-white font-medium">Ebook</div>
+                                </div>
+                                <div className="bg-[#4A90E2] p-8 relative flex items-center justify-center">
+                                  <div className="text-white text-center">
+                                    <div className="inline-block bg-white/20 backdrop-blur-sm rounded-lg p-4">
+                                      <div className="w-32 h-32 mx-auto bg-white/30 rounded-lg flex items-center justify-center"><span className="text-4xl">📊</span></div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between pt-2 border-t border-[#eaeaea] flex-shrink-0">
+                            <div className="flex items-center gap-2">
+                              <div className="w-5 h-5 bg-[#0077b5] rounded flex items-center justify-center"><span className="text-white text-[10px] font-semibold">T.</span></div>
+                              <span className="text-xs text-[#666666]">ThoughtSpot</span>
+                            </div>
+                            <button className="flex items-center gap-1 text-xs text-[#0077b5] font-medium hover:underline"><span>🔒</span><span>Unlock Full Document</span></button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {/* ReferencePane: part of flex layout; width 40px (strip) → 60%; toggle reflows canvas */}
+                  <motion.div
+                    initial={false}
+                    animate={{ width: showReferences ? "65%" : 40 }}
+                    transition={{ type: "tween", duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+                    className="flex-shrink-0 overflow-hidden flex flex-col bg-white border-l border-[#D3D3D3] min-h-0"
+                    style={{ minWidth: 0 }}
+                  >
+                    {showReferences ? (
+                      <>
+                        <button type="button" onClick={() => setShowReferences(false)} className="flex-shrink-0 flex items-center gap-2 h-12 px-4 bg-[#F6F6F6] border-b border-[#D3D3D3] text-[#303030] text-sm font-medium hover:bg-white transition-colors w-full" aria-label="Hide references">
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white border border-[#D3D3D3]">
+                            <Image src="/images/Icon%20Right.svg" alt="" width={16} height={16} className="h-4 w-4" />
+                          </span>
+                          <span>References</span>
+                        </button>
+                        <div className="flex-1 min-h-0 overflow-y-auto overflow-x-auto p-4 flex items-center">
+                          <div className="flex flex-row flex-nowrap gap-6 pb-4 pt-2">
+                            {["Tesla", "Reliance", "Flipkart", "Open AI", "Unacademy"].map((companyName, index) => (
+                              <div key={index} className="flex-shrink-0 w-[400px]">
+                                <div className="flex items-center justify-between mb-2 w-full gap-3">
+                                  <span className="text-xs font-medium text-[#5E5E5E] shrink-0">{companyName}</span>
+                                </div>
+                                <div className="bg-white rounded-lg border border-[#eaeaea] p-4 shadow-sm hover:shadow-md transition-shadow h-[675px] flex flex-col min-h-0 w-full">
+                                  {/* Apple frame design - 400×675 */}
+                                  <div className="flex flex-col flex-1 min-h-0 space-y-3 overflow-y-auto">
+                                    {/* Header */}
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex items-center gap-2">
+                                        <div className="w-6 h-6 bg-[#0077b5] rounded flex items-center justify-center">
+                                          <span className="text-white text-xs font-semibold">T.</span>
+                                        </div>
+                                        <span className="text-xs text-[#666666]">131,229 followers</span>
+                                        <span className="text-xs text-[#666666]">·</span>
+                                        <span className="text-xs text-[#666666]">Promoted</span>
+                                      </div>
+                                      <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                          <button className="p-1 hover:bg-[#f6f6f6] rounded" aria-label="Open options">
+                                            <MoreVertical className="h-4 w-4 text-[#666666]" />
+                                          </button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                          <DropdownMenuItem onClick={() => setIsEditModeOpen(true)}>Edit</DropdownMenuItem>
+                                          <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                      </DropdownMenu>
+                                    </div>
+                                    {/* Ad Copy */}
+                                    <div className="space-y-2">
+                                      <p className="text-sm text-[#121212] font-medium">
+                                        Spending more time reacting than driving results? You&apos;re not alone.
+                                      </p>
+                                      <p className="text-sm text-[#121212]">
+                                        You&apos;re not alone. Data teams report spending less than half of their work week actually analyzing data. At CVS, ThoughtSpot helped reduce time-to-insight by 60%. With GenAI, you can finally focus on the strategic work that moves the needle.
+                                      </p>
+                                      <p className="text-sm text-[#0077b5] font-medium">
+                                        See how to reclaim control of your career. Download the Dashboards are Dead, Gen AI edition.
+                                      </p>
+                                    </div>
+                                    {/* Ad Creative */}
+                                    <div className="space-y-2">
+                                      <div className="relative bg-black rounded-lg overflow-hidden">
+                                        <div className="p-6">
+                                          <div className="text-white space-y-2 mb-4">
+                                            <h4 className="text-2xl font-bold">Dashboards are dead</h4>
+                                            <p className="text-lg">GenAI is the last nail in the coffin</p>
+                                          </div>
+                                          <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm px-2 py-1 rounded text-xs text-white font-medium">
+                                            Ebook
+                                          </div>
+                                        </div>
+                                        <div className="bg-[#4A90E2] p-8 relative flex items-center justify-center">
+                                          <div className="text-white text-center">
+                                            <div className="inline-block bg-white/20 backdrop-blur-sm rounded-lg p-4">
+                                              <div className="w-32 h-32 mx-auto bg-white/30 rounded-lg flex items-center justify-center">
+                                                <span className="text-4xl">📊</span>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    {/* Footer */}
+                                    <div className="flex items-center justify-between pt-2 border-t border-[#eaeaea]">
+                                      <div className="flex items-center gap-2">
+                                        <div className="w-5 h-5 bg-[#0077b5] rounded flex items-center justify-center">
+                                          <span className="text-white text-[10px] font-semibold">T.</span>
+                                        </div>
+                                        <span className="text-xs text-[#666666]">ThoughtSpot</span>
+                                      </div>
+                                      <button className="flex items-center gap-1 text-xs text-[#0077b5] font-medium hover:underline">
+                                        <span>🔒</span>
+                                        <span>Unlock Full Document</span>
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setShowReferences(true)}
+                        className="w-10 h-full flex flex-col items-center justify-start pt-2 gap-[50px] bg-[#EAEAEA] hover:bg-[#E0E0E0] border-0 transition-colors shrink-0"
+                        aria-label="View references"
+                      >
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[#F6F6F6] border border-[#D3D3D3]">
+                          <Image src="/images/Icon%20Right.svg" alt="" width={16} height={16} className="h-4 w-4" />
+                        </span>
+                        <span className="text-[#303030] text-xs font-medium whitespace-nowrap [writing-mode:vertical] [text-orientation:mixed] -rotate-[270deg] select-none">View references</span>
+                      </button>
+                    )}
+                  </motion.div>
+                </div>
+                ) : (
+                /* Other modes: single grey canvas with overlay button and inline reference pane */
                 <div
                   className={`relative flex-1 flex flex-col overflow-y-auto bg-[#EAEAEA] min-h-0 ${showReferences ? "overflow-x-auto" : "overflow-x-hidden"}`}
                   style={{
@@ -1513,14 +1739,12 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                     backgroundSize: '20px 20px'
                   }}
                 >
-                  {/* View/Hide references: Edge-aligned Divider & Surface-based Separation use button; Framed Side Pane uses vertical strip */}
-                  {editTopbarOption !== "Framed Side Pane" && (
-                    <button
-                      type="button"
-                      onClick={() => setShowReferences(!showReferences)}
-                      className="absolute top-4 right-4 z-10 inline-flex items-center justify-center gap-2 rounded-lg bg-[#F6F6F6] text-[#303030] hover:bg-[#EAEAEA] border-0 shadow-none h-8 w-[160px] pl-3 py-2 text-xs font-medium transition-colors"
-                      style={{ background: 'unset' }}
-                    >
+                  <button
+                    type="button"
+                    onClick={() => setShowReferences(!showReferences)}
+                    className="absolute top-4 right-4 z-10 inline-flex items-center justify-center gap-2 rounded-lg bg-[#F6F6F6] text-[#303030] hover:bg-[#EAEAEA] border-0 shadow-none h-8 w-[160px] pl-3 py-2 text-xs font-medium transition-colors"
+                    style={{ background: 'unset' }}
+                  >
                       <span className="text-[#303030] w-[100px]">
                         {showReferences ? "Hide references" : "View references"}
                       </span>
@@ -1534,42 +1758,16 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                         />
                       </span>
                     </button>
-                  )}
-                  {/* Framed Side Pane: vertical strip to toggle reference pane */}
-                  {editTopbarOption === "Framed Side Pane" && (
-                    <button
-                      type="button"
-                      onClick={() => setShowReferences(!showReferences)}
-                      className={`absolute right-0 bottom-0 z-10 w-10 h-full flex flex-col items-center justify-start pt-2 gap-[50px] transition-colors ${showReferences ? "bg-transparent hover:bg-transparent border-transparent" : "bg-[#EAEAEA] hover:bg-[#E0E0E0] border-l border-[#F6F6F6]"}`}
-                      aria-label={showReferences ? "Hide references" : "View references"}
-                    >
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[#F6F6F6] border border-[#D3D3D3]">
-                        <Image
-                          src={showReferences ? "/images/Icon%20Right.svg" : "/images/Icon%20Left.svg"}
-                          alt=""
-                          width={16}
-                          height={16}
-                          className="h-4 w-4"
-                        />
-                      </span>
-                      {!showReferences && (
-                        <span className="text-[#303030] text-xs font-medium whitespace-nowrap [writing-mode:vertical] [text-orientation:mixed] -rotate-[270deg] select-none">
-                          View references
-                        </span>
-                      )}
-                    </button>
-                  )}
                   <div className="pl-6 py-0 flex-1 flex flex-col min-h-0 min-w-0" style={{ borderWidth: 0, borderColor: 'transparent', borderStyle: 'none', borderImage: 'none' }}>
-                    <div
-                      className={`max-w-8xl mx-auto flex flex-row gap-10 flex-1 items-center transition-[justify-content] duration-[800ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] ${showReferences ? "justify-start" : "justify-center"} min-w-0 min-h-0`}
-                      style={{ width: "100%", ...(showReferences ? { minWidth: 964 } : {}) }}
-                    >
-                      {/* Apple Content Card - center by default, slides left when references shown */}
+                    <div className="max-w-8xl mx-auto flex flex-row gap-10 flex-1 items-center min-w-0 min-h-0 w-full">
                       <motion.div
-                        layout
+                        initial={false}
+                        animate={{ flex: showReferences ? "0 0 400px" : 1 }}
                         transition={{ type: "tween", duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
-                        className="flex-shrink-0 w-[400px] h-full flex flex-col items-center justify-center"
+                        className="flex-shrink-0 flex flex-col items-center justify-center h-full"
+                        style={{ overflow: "hidden", minWidth: showReferences ? 400 : undefined }}
                       >
+                      <div className="flex-shrink-0 w-[400px] h-full flex flex-col items-center justify-center">
                         <div className="flex items-center justify-between mb-2 w-full gap-3">
                           <span className="text-xs font-medium text-[#5E5E5E] shrink-0">Apple</span>
                           <div className="flex items-center gap-1.5 shrink-0 text-[#5E5E5E]">
@@ -1662,9 +1860,8 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                             </button>
                           </div>
                       </div>
+                      </div>
                       </motion.div>
-                      
-                      {/* Reference pane: slides in from the left edge of the trigger (right side) via translateX, extends to viewport right edge */}
                       <motion.div
                         initial={false}
                         animate={{
@@ -1674,7 +1871,10 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                         }}
                         transition={{ type: "tween", duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
                         className="flex-shrink-0 overflow-hidden min-w-0"
-                        style={{ height: "100%" }}
+                        style={{
+                          height: "100%",
+                          ...(editTopbarOption === "Surface-based Separation" && showReferences ? { maxWidth: "60%" } : {}),
+                        }}
                       >
                         <motion.div
                           initial={false}
@@ -1683,18 +1883,8 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                           className={`flex flex-col justify-stretch h-full w-full min-w-full ${!showReferences ? "pointer-events-none" : ""} ${showReferences ? "border-l border-[#D3D3D3]" : ""} ${editTopbarOption === "Surface-based Separation" ? "bg-[#F6F6F6]" : ""}`}
                           style={{ minWidth: "100%" }}
                         >
-                        {/* Framed Side Pane: clickable header to collapse reference pane */}
-                        {editTopbarOption === "Framed Side Pane" && (
-                          <button
-                            type="button"
-                            onClick={() => setShowReferences(false)}
-                            className="flex-shrink-0 flex items-center justify-between gap-2 h-12 px-4 bg-[#F6F6F6] border-b border-[#D3D3D3] text-[#303030] text-sm font-medium hover:bg-[#EAEAEA] transition-colors"
-                          >
-                            <span>Hide references</span>
-                          </button>
-                        )}
-                        <div className="overflow-x-auto -mx-6 pl-12 pr-6 w-full min-w-[1200px] pt-6 flex-1 min-h-0 flex items-start">
-                        <div className="flex flex-row flex-nowrap gap-6 pb-4 justify-center pt-12" style={{ width: 'max-content' }}>
+                        <div className="overflow-x-auto -mx-6 pl-12 pr-6 w-full min-w-[1200px] pt-6 flex-1 min-h-0 flex items-center">
+                        <div className="flex flex-row flex-nowrap gap-6 pb-4 justify-center pt-10" style={{ width: 'max-content' }}>
                           {/* Reference Cards */}
                           {["Tesla", "Reliance", "Flipkart", "Open AI", "Unacademy"].map((companyName, index) => (
                               <div key={index} className="flex-shrink-0 w-[400px]">
@@ -1713,9 +1903,9 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                     <span className="text-xs font-medium">3</span>
                                   </div>
                                 </div>
-                                <div className="bg-white rounded-lg border border-[#eaeaea] p-4 shadow-sm hover:shadow-md transition-shadow">
+                                <div className="bg-white rounded-lg border border-[#eaeaea] p-4 shadow-sm hover:shadow-md transition-shadow h-[675px] flex flex-col min-h-0 w-full">
                                   {/* Ad Preview Content */}
-                                  <div className="space-y-3">
+                                  <div className="flex flex-col flex-1 min-h-0 space-y-3 overflow-y-auto">
                                     {/* Header */}
                                     <div className="flex items-center justify-between">
                                       <div className="flex items-center gap-2">
@@ -1800,6 +1990,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                     </div>
                   </div>
                 </div>
+                )}
               </div>
             </motion.div>
           )}
