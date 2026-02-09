@@ -1890,18 +1890,6 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                               <div key={index} className="flex-shrink-0 w-[400px]">
                                 <div className="flex items-center justify-between mb-2 w-full gap-3">
                                   <span className="text-xs font-medium text-[#5E5E5E] shrink-0">{companyName}</span>
-                                  <div className="flex items-center gap-1.5 shrink-0 text-[#5E5E5E]">
-                                    <span className="w-4 h-4 flex items-center justify-center shrink-0">
-                                      <Image
-                                        src="/images/message-square.svg"
-                                        alt=""
-                                        width={16}
-                                        height={16}
-                                        className="w-4 h-4 object-contain"
-                                      />
-                                    </span>
-                                    <span className="text-xs font-medium">3</span>
-                                  </div>
                                 </div>
                                 <div className="bg-white rounded-lg border border-[#eaeaea] p-4 shadow-sm hover:shadow-md transition-shadow h-[675px] flex flex-col min-h-0 w-full">
                                   {/* Ad Preview Content */}
