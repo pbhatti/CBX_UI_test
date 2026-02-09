@@ -1619,7 +1619,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                   >
                     {showReferences ? (
                       <>
-                        <button type="button" onClick={() => setShowReferences(false)} className="flex-shrink-0 flex items-center gap-2 h-12 px-4 bg-[#F6F6F6] border-b border-[#D3D3D3] text-[#303030] text-sm font-medium hover:bg-white transition-colors w-full" aria-label="Hide references">
+                        <button type="button" onClick={() => setShowReferences(false)} className="flex-shrink-0 flex items-center gap-2 h-12 px-4 bg-white border-b border-[#D3D3D3] text-[#303030] text-sm font-medium hover:bg-white transition-colors w-full" aria-label="Hide references">
                           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white border border-[#D3D3D3]">
                             <Image src="/images/Icon%20Right.svg" alt="" width={16} height={16} className="h-4 w-4" />
                           </span>
@@ -1716,10 +1716,10 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                       <button
                         type="button"
                         onClick={() => setShowReferences(true)}
-                        className="w-10 h-full flex flex-col items-center justify-start pt-2 gap-[50px] bg-[#EAEAEA] hover:bg-[#E0E0E0] border-0 transition-colors shrink-0"
+                        className="w-10 h-full flex flex-col items-center justify-start pt-2 gap-[50px] bg-white hover:bg-gray-100 border-0 transition-colors shrink-0"
                         aria-label="View references"
                       >
-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[#F6F6F6] border border-[#D3D3D3]">
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-[#D3D3D3]">
                           <Image src="/images/Icon%20Right.svg" alt="" width={16} height={16} className="h-4 w-4" />
                         </span>
                         <span className="text-[#303030] text-xs font-medium whitespace-nowrap [writing-mode:vertical] [text-orientation:mixed] -rotate-[270deg] select-none">View references</span>
