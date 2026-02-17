@@ -1,7 +1,7 @@
 "use client"
 
-import { X, ChevronDown, Settings, MoreVertical, PanelLeftClose, ChevronRight, Search as SearchIcon, Sparkles, AlertTriangle } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
+import { X, ChevronDown, Settings, MoreVertical, MessageSquare, PanelLeftClose, ChevronRight, Search as SearchIcon, Sparkles, AlertTriangle } from "lucide-react"
+import { motion, AnimatePresence, LayoutGroup } from "framer-motion"
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
@@ -109,13 +109,14 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
   }, [onHideNav])
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-      className="fixed inset-0 z-50 overflow-hidden"
-    >
+    <LayoutGroup>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+        className="fixed inset-0 z-50 overflow-hidden"
+      >
       {/* Topbar - 64px height */}
       <div className="absolute top-0 left-0 right-0 h-16 bg-white border-b border-[#eaeaea] flex items-center justify-between px-6 z-10">
         <div className="flex items-center gap-2">
@@ -732,16 +733,30 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                 <div className="mx-auto w-full max-w-[1200px]">
                   <div className="flex gap-6" style={{ verticalAlign: 'middle' }}>
                   {/* Apple Column */}
-                  <motion.div 
-                    className="flex-shrink-0 w-[400px]"
-                    initial={{ x: 200, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ duration: 2, ease: [0.4, 0, 0.2, 1] }}
-                  >
-                    <h3 className="text-sm font-medium text-[#303030] mb-4">Content for: <span className="font-bold">Apple</span></h3>
-                    <div className="bg-white rounded-lg border border-[#eaeaea] p-4 shadow-sm hover:shadow-md transition-shadow">
-                      {/* Ad Preview Content */}
-                      <div className="space-y-3">
+                  {!isEditModeOpen && (
+                    <motion.div 
+                      layout
+                      layoutId="apple-frame"
+                      className="flex-shrink-0 w-[400px]"
+                      initial={{ x: 200, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ type: "spring", stiffness: 150, damping: 24 }}
+                      style={{ transformOrigin: "center center" }}
+                    >
+                      <div className="mb-2 flex items-center justify-between">
+                        <h3 className="text-sm font-medium text-[#303030]">Apple</h3>
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 flex items-center justify-center shrink-0">
+                            <MessageSquare className="w-4 h-4 text-[#303030]" />
+                          </div>
+                          <span className="text-sm font-medium text-[#303030]">3</span>
+                        </div>
+                      </div>
+                      <div
+                        className="bg-white rounded-lg border border-[#eaeaea] p-4 shadow-sm hover:shadow-md transition-shadow"
+                      >
+                        {/* Ad Preview Content */}
+                        <div className="space-y-3">
                         {/* Header */}
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
@@ -815,9 +830,10 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                             <span>Unlock Full Document</span>
                           </button>
                         </div>
+                        </div>
                       </div>
-                    </div>
-                  </motion.div>
+                    </motion.div>
+                  )}
                   
                   {/* Tesla Column */}
                   <motion.div 
@@ -826,7 +842,15 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                     animate={{ x: 0, opacity: 1 }}
                     transition={{ duration: 2, ease: [0.4, 0, 0.2, 1], delay: 0.2 }}
                   >
-                    <h3 className="text-sm font-medium text-[#303030] mb-4">Content for: <span className="font-bold">Tesla</span></h3>
+                    <div className="mb-2 flex items-center justify-between">
+                      <h3 className="text-sm font-medium text-[#303030]">Tesla</h3>
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 flex items-center justify-center shrink-0">
+                          <MessageSquare className="w-4 h-4 text-[#303030]" />
+                        </div>
+                        <span className="text-sm font-medium text-[#303030]">3</span>
+                      </div>
+                    </div>
                     <div className="bg-white rounded-lg border border-[#eaeaea] p-4 shadow-sm hover:shadow-md transition-shadow">
                       {/* Ad Preview Content */}
                       <div className="space-y-3">
@@ -914,7 +938,15 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                     animate={{ x: 0, opacity: 1 }}
                     transition={{ duration: 2, ease: [0.4, 0, 0.2, 1], delay: 0.4 }}
                   >
-                    <h3 className="text-sm font-medium text-[#303030] mb-4">Content for: <span className="font-bold">Reliance</span></h3>
+                    <div className="mb-2 flex items-center justify-between">
+                      <h3 className="text-sm font-medium text-[#303030]">Reliance</h3>
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 flex items-center justify-center shrink-0">
+                          <MessageSquare className="w-4 h-4 text-[#303030]" />
+                        </div>
+                        <span className="text-sm font-medium text-[#303030]">3</span>
+                      </div>
+                    </div>
                     <div className="bg-white rounded-lg border border-[#eaeaea] p-4 shadow-sm hover:shadow-md transition-shadow">
                       {/* Ad Preview Content */}
                       <div className="space-y-3">
@@ -995,14 +1027,22 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                     </div>
                   </motion.div>
                   
-                  {/* Flipkart Column */}
+                  {/* Myntra Column */}
                   <motion.div 
                     className="flex-shrink-0 w-[400px]"
                     initial={{ x: 200, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     transition={{ duration: 2, ease: [0.4, 0, 0.2, 1], delay: 0.6 }}
                   >
-                    <h3 className="text-sm font-medium text-[#303030] mb-4">Content for: <span className="font-bold">Flipkart</span></h3>
+                    <div className="mb-2 flex items-center justify-between">
+                      <h3 className="text-sm font-medium text-[#303030]">Myntra</h3>
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 flex items-center justify-center shrink-0">
+                          <MessageSquare className="w-4 h-4 text-[#303030]" />
+                        </div>
+                        <span className="text-sm font-medium text-[#303030]">3</span>
+                      </div>
+                    </div>
                     <div className="bg-white rounded-lg border border-[#eaeaea] p-4 shadow-sm hover:shadow-md transition-shadow">
                       {/* Ad Preview Content */}
                       <div className="space-y-3">
@@ -1083,102 +1123,22 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                     </div>
                   </motion.div>
                   
-                  {/* Unacademy Column */}
-                  <motion.div 
-                    className="flex-shrink-0 w-[400px]"
-                    initial={{ x: 200, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ duration: 2, ease: [0.4, 0, 0.2, 1], delay: 0.8 }}
-                  >
-                    <h3 className="text-sm font-medium text-[#303030] mb-4">Content for: <span className="font-bold">Unacademy</span></h3>
-                    <div className="bg-white rounded-lg border border-[#eaeaea] p-4 shadow-sm hover:shadow-md transition-shadow">
-                      {/* Ad Preview Content */}
-                      <div className="space-y-3">
-                        {/* Header */}
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 bg-[#0077b5] rounded flex items-center justify-center">
-                              <span className="text-white text-xs font-semibold">T.</span>
-                            </div>
-                            <span className="text-xs text-[#666666]">131,229 followers</span>
-                            <span className="text-xs text-[#666666]">·</span>
-                            <span className="text-xs text-[#666666]">Promoted</span>
-                          </div>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <button className="p-1 hover:bg-[#f6f6f6] rounded" aria-label="Open options">
-                                <MoreVertical className="h-4 w-4 text-[#666666]" />
-                              </button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => setIsEditModeOpen(true)}>Edit</DropdownMenuItem>
-                              <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                        
-                        {/* Ad Copy */}
-                        <div className="space-y-2">
-                          <p className="text-sm text-[#121212] font-medium">
-                            Spending more time reacting than driving results? You&apos;re not alone.
-                          </p>
-                          <p className="text-sm text-[#121212]">
-                            You&apos;re not alone. Data teams report spending less than half of their work week actually analyzing data. At CVS, ThoughtSpot helped reduce time-to-insight by 60%. With GenAI, you can finally focus on the strategic work that moves the needle.
-                          </p>
-                          <p className="text-sm text-[#0077b5] font-medium">
-                            See how to reclaim control of your career. Download the Dashboards are Dead, Gen AI edition.
-                          </p>
-                        </div>
-                        
-                        {/* Ad Creative */}
-                        <div className="space-y-2">
-                          <div className="relative bg-black rounded-lg overflow-hidden">
-                            <div className="p-6">
-                              <div className="text-white space-y-2 mb-4">
-                                <h4 className="text-2xl font-bold">Dashboards are dead</h4>
-                                <p className="text-lg">GenAI is the last nail in the coffin</p>
-                              </div>
-                              <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm px-2 py-1 rounded text-xs text-white font-medium">
-                                Ebook
-                              </div>
-                            </div>
-                            <div className="bg-[#4A90E2] p-8 relative flex items-center justify-center">
-                              <div className="text-white text-center">
-                                <div className="inline-block bg-white/20 backdrop-blur-sm rounded-lg p-4">
-                                  <div className="w-32 h-32 mx-auto bg-white/30 rounded-lg flex items-center justify-center">
-                                    <span className="text-4xl">📊</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* Footer */}
-                        <div className="flex items-center justify-between pt-2 border-t border-[#eaeaea]">
-                          <div className="flex items-center gap-2">
-                            <div className="w-5 h-5 bg-[#0077b5] rounded flex items-center justify-center">
-                              <span className="text-white text-[10px] font-semibold">T.</span>
-                            </div>
-                            <span className="text-xs text-[#666666]">ThoughtSpot</span>
-                          </div>
-                          <button className="flex items-center gap-1 text-xs text-[#0077b5] font-medium hover:underline">
-                            <span>🔒</span>
-                            <span>Unlock Full Document</span>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                  
-                  {/* OpenAI Column */}
+                  {/* Open AI Column */}
                   <motion.div 
                     className="flex-shrink-0 w-[400px]"
                     initial={{ x: 200, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     transition={{ duration: 2, ease: [0.4, 0, 0.2, 1], delay: 1.0 }}
                   >
-                    <h3 className="text-sm font-medium text-[#303030] mb-4">Content for: <span className="font-bold">OpenAI</span></h3>
+                    <div className="mb-2 flex items-center justify-between">
+                      <h3 className="text-sm font-medium text-[#303030]">Open AI</h3>
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 flex items-center justify-center shrink-0">
+                          <MessageSquare className="w-4 h-4 text-[#303030]" />
+                        </div>
+                        <span className="text-sm font-medium text-[#303030]">3</span>
+                      </div>
+                    </div>
                     <div className="bg-white rounded-lg border border-[#eaeaea] p-4 shadow-sm hover:shadow-md transition-shadow">
                       {/* Ad Preview Content */}
                       <div className="space-y-3">
@@ -1437,7 +1397,13 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
               className="fixed inset-0 z-[60] flex flex-col bg-white"
             >
               {/* Black Topbar */}
-              <div className="h-16 bg-black flex items-center justify-between px-6 shrink-0">
+              <motion.div
+                className="h-16 bg-black flex items-center justify-between px-6 shrink-0 relative z-[70]"
+                initial={{ opacity: 0, y: -12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.4, delay: 0.15 }}
+              >
                 <div className="flex items-center gap-4">
                   <button
                     onClick={() => setIsEditModeOpen(false)}
@@ -1446,12 +1412,25 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                   >
                     <X className="h-5 w-5 text-white" />
                   </button>
-                  <span className="text-white text-lg font-semibold">Edit Content</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 flex items-center justify-center shrink-0 rounded-[6px] bg-white">
+                      <Image
+                        src="/images/LinkedIn.svg"
+                        alt="LinkedIn"
+                        width={20}
+                        height={20}
+                        className="w-5 h-5 object-contain"
+                      />
+                    </div>
+                    <span className="text-white text-lg font-semibold">
+                      Editing Linkedin ad for Apple
+                    </span>
+                  </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <button
                         type="button"
-                        className="inline-flex items-center justify-center gap-2 rounded-md bg-white text-black hover:bg-white/90 h-9 px-4 text-sm font-medium border-0"
+                        className="inline-flex items-center justify-center gap-1 rounded-md bg-white text-black hover:bg-white/90 h-7 px-4 text-sm font-medium border-0"
                       >
                         {editTopbarOption}
                         <ChevronDown className="h-4 w-4" />
@@ -1472,10 +1451,17 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                 </div>
                 
                 <div className="flex items-center gap-4">
-                  {/* Warning Text */}
-                  <div className="flex items-center gap-2">
+                  {/* Warning Tooltip */}
+                  <div className="relative flex items-center group">
                     <AlertTriangle className="h-4 w-4 text-[#FF9500]" />
-                    <span className="text-xs text-white font-light">2 other user is editing this content</span>
+                    <div className="pointer-events-none absolute left-0 top-full mt-2 opacity-0 group-hover:opacity-100 group-hover:pointer-events-auto group-hover:mt-3 transition-all duration-150">
+                      <div className="relative flex flex-col items-center">
+                        <div className="rounded-[8px] bg-black text-white text-xs font-light px-4 py-3 shadow-lg whitespace-nowrap">
+                          2 other user is editing this content
+                        </div>
+                        <div className="absolute -top-2 left-8 w-3 h-3 bg-black rotate-45" />
+                      </div>
+                    </div>
                   </div>
                   
                   {/* Stacked Avatars */}
@@ -1503,12 +1489,18 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                     <ChevronDown className="h-4 w-4 ml-2" />
                   </Button>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Main Content Area */}
               <div className="flex-1 flex overflow-hidden">
                 {/* Left Chat Panel */}
-                <div className="w-80 bg-white border-r border-[#eaeaea] flex flex-col shrink-0">
+                <motion.div
+                  className="w-80 bg-white border-r border-[#eaeaea] flex flex-col shrink-0"
+                  initial={{ opacity: 0, x: 16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 16 }}
+                  transition={{ duration: 0.45, delay: 0.2 }}
+                >
                   <div className="p-4 border-b border-[#eaeaea]">
                     <h3 className="text-sm font-semibold text-[#121212]">Chat</h3>
                   </div>
@@ -1527,11 +1519,11 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                       </Button>
                     </div>
                   </div>
-                </div>
+                </motion.div>
 
                 {/* EditorLayout: LeftChat | CanvasWrapper | ReferencePane (Framed Side Pane) OR single grey canvas (other modes) */}
                 {editTopbarOption === "Framed Side Pane" ? (
-                <div className="flex-1 flex min-w-0 overflow-hidden">
+                  <div className="flex-1 flex min-w-0 overflow-hidden">
                   {/* CanvasWrapper: owns canvas space; Apple frame centers in available width */}
                   <div
                     className="flex-1 flex flex-col min-w-0 overflow-y-auto overflow-x-hidden bg-[#EAEAEA] min-h-0"
@@ -1545,7 +1537,13 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                   >
                     <div className="flex-1 flex items-center justify-center min-h-0 px-6">
                       {/* AppleFrame: centered in canvas; reflows when ReferencePane opens */}
-                      <div className="flex-shrink-0 w-[400px] h-full flex flex-col items-center justify-center max-h-full">
+                      <motion.div
+                        layout
+                        layoutId="apple-frame"
+                        className="flex-shrink-0 w-[400px] h-full flex flex-col items-center justify-center max-h-full"
+                        transition={{ type: "spring", stiffness: 80, damping: 20 }}
+                        style={{ transformOrigin: "center center" }}
+                      >
                         <div className="flex items-center justify-between mb-2 w-full gap-3">
                           <span className="text-xs font-medium text-[#5E5E5E] shrink-0">Apple</span>
                           <div className="flex items-center gap-1.5 shrink-0 text-[#5E5E5E]">
@@ -1555,7 +1553,9 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                             <span className="text-xs font-medium">3</span>
                           </div>
                         </div>
-                        <div className="bg-white rounded-lg border border-[#eaeaea] p-4 shadow-sm hover:shadow-md transition-shadow h-[675px] flex flex-col min-h-0 w-full">
+                        <div
+                          className="bg-white rounded-lg border border-[#eaeaea] p-4 shadow-sm hover:shadow-md transition-shadow h-[675px] flex flex-col min-h-0 w-full"
+                        >
                           <div className="space-y-3 flex-1 min-h-0 overflow-auto">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
@@ -1606,14 +1606,14 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                             <button className="flex items-center gap-1 text-xs text-[#0077b5] font-medium hover:underline"><span>🔒</span><span>Unlock Full Document</span></button>
                           </div>
                         </div>
-                      </div>
+                      </motion.div>
                     </div>
                   </div>
                   {/* ReferencePane: part of flex layout; width 40px (strip) → 60%; toggle reflows canvas */}
                   <motion.div
                     initial={false}
                     animate={{ width: showReferences ? "65%" : 40 }}
-                    transition={{ type: "tween", duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+                    transition={{ type: "spring", stiffness: 120, damping: 18 }}
                     className="flex-shrink-0 overflow-hidden flex flex-col bg-white border-l border-[#D3D3D3] min-h-0"
                     style={{ minWidth: 0 }}
                   >
@@ -1763,11 +1763,17 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                       <motion.div
                         initial={false}
                         animate={{ flex: showReferences ? "0 0 400px" : 1 }}
-                        transition={{ type: "tween", duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
+                        transition={{ type: "spring", stiffness: 70, damping: 18 }}
                         className="flex-shrink-0 flex flex-col items-center justify-center h-full"
                         style={{ overflow: "hidden", minWidth: showReferences ? 400 : undefined }}
                       >
-                      <div className="flex-shrink-0 w-[400px] h-full flex flex-col items-center justify-center">
+                      <motion.div
+                        layout
+                        layoutId="apple-frame"
+                        className="flex-shrink-0 w-[400px] h-full flex flex-col items-center justify-center"
+                        transition={{ type: "spring", stiffness: 80, damping: 20 }}
+                        style={{ transformOrigin: "center center" }}
+                      >
                         <div className="flex items-center justify-between mb-2 w-full gap-3">
                           <span className="text-xs font-medium text-[#5E5E5E] shrink-0">Apple</span>
                           <div className="flex items-center gap-1.5 shrink-0 text-[#5E5E5E]">
@@ -1783,7 +1789,9 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                             <span className="text-xs font-medium">3</span>
                           </div>
                         </div>
-                        <div className="bg-white rounded-lg border border-[#eaeaea] p-4 shadow-sm hover:shadow-md transition-shadow h-[675px] flex flex-col min-h-0 w-full">
+                        <div
+                          className="bg-white rounded-lg border border-[#eaeaea] p-4 shadow-sm hover:shadow-md transition-shadow h-[675px] flex flex-col min-h-0 w-full"
+                        >
                         {/* Ad Preview Content */}
                         <div className="space-y-3 flex-1 min-h-0 overflow-auto">
                           {/* Header */}
@@ -1859,8 +1867,8 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                               <span>Unlock Full Document</span>
                             </button>
                           </div>
-                      </div>
-                      </div>
+                        </div>
+                      </motion.div>
                       </motion.div>
                       <motion.div
                         initial={false}
@@ -1985,6 +1993,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
         </AnimatePresence>
       </div>
     </motion.div>
+    </LayoutGroup>
   )
 }
 
