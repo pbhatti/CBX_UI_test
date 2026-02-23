@@ -102,8 +102,8 @@ export function EditableTextBlock({
       }}
       className={cn(
         "relative outline-none cursor-pointer transition-[box-shadow,background-color]",
-        showOverlay && "aiSubtleBg",
-        isFading && "aiSubtleBgFade",
+        showOverlay && "aiThinking",
+        isFading && "aiThinkingFade",
         "aiBlockBorder",
         showOverlay && "aiBlockBorderOverlay",
         !showOverlay && !isSelected && "aiBlockBorderHover",
@@ -113,7 +113,7 @@ export function EditableTextBlock({
       aria-label={`Select ${blockId} block for editing`}
     >
       {/* Phase 1 (thinking): old text only. Phase 2 (streaming): hide old text. Phase 3 (fade): new text (children). */}
-      {/* aiSubtleBg::before provides transform-based drift overlay when showOverlay */}
+      {/* aiThinking::before + ::after alternate fade overlay when showOverlay */}
       {!isStreaming && (
         <span className={cn("relative z-10", isThinking && "opacity-50")}>
           {children}
