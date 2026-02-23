@@ -2,7 +2,7 @@
 
 import { X, ChevronDown, Settings, MoreVertical, MessageSquare, PanelLeftClose, ChevronRight, Search as SearchIcon, Sparkles, AlertTriangle } from "lucide-react"
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { Input } from "@/components/ui/input"
@@ -10,6 +10,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { PublishSettingsModal } from "@/components/publish-settings-modal"
+import { AIPanel, type AIPanelHandle } from "@/components/ai-panel"
+import { EditableTextBlock, type EditableBlockId } from "@/components/editable-text-block"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,6 +55,112 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
   const [editTopbarOption, setEditTopbarOption] = useState<"Edge-aligned Divider" | "Surface-based Separation" | "Framed Side Pane">("Edge-aligned Divider")
   const [isFramedPaneAnimating, setIsFramedPaneAnimating] = useState(false)
   const framedPaneTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Block-level AI edit (Framed Side Pane content frame)
+  const [selectedBlockId, setSelectedBlockId] = useState<EditableBlockId | null>(null)
+  const [editBlockContent, setEditBlockContent] = useState({
+    headline: "Spending more time reacting than driving results? You're not alone.",
+    body: "You're not alone. Data teams report spending less than half of their work week actually analyzing data. At CVS, ThoughtSpot helped reduce time-to-insight by 60%. With GenAI, you can finally focus on the strategic work that moves the needle.",
+    cta: "See how to reclaim control of your career. Download the Dashboards are Dead, Gen AI edition.",
+  })
+  const [blockThinkingId, setBlockThinkingId] = useState<EditableBlockId | null>(null)
+  const [blockStreamingId, setBlockStreamingId] = useState<EditableBlockId | null>(null)
+  const [blockFadeId, setBlockFadeId] = useState<EditableBlockId | null>(null)
+  /** When set, the block is streaming this text in word-by-word (after thinking). */
+  const [streamingTarget, setStreamingTarget] = useState<{ blockId: EditableBlockId; text: string } | null>(null)
+  const chatInputRef = useRef<HTMLTextAreaElement>(null)
+  const aiPanelRef = useRef<AIPanelHandle>(null)
+  const thinkingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const fadeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const THINKING_MS = 6000
+  const FADE_MS = 300
+  const MOCK_AI_BLOCK_UPDATES = useRef<Record<EditableBlockId, string>>({
+    headline: "Drive results, not reactions. You're not alone.",
+    body: "Data teams spend less than half their week on real analysis. ThoughtSpot helped CVS cut time-to-insight by 60%. With GenAI, focus on the work that moves the needle.",
+    cta: "Reclaim your career. Get the Dashboards are Dead, Gen AI edition.",
+  }).current
+
+  const clearBlockTimers = useCallback(() => {
+    if (thinkingTimeoutRef.current) {
+      clearTimeout(thinkingTimeoutRef.current)
+      thinkingTimeoutRef.current = null
+    }
+    if (fadeTimeoutRef.current) {
+      clearTimeout(fadeTimeoutRef.current)
+      fadeTimeoutRef.current = null
+    }
+  }, [])
+
+  const handleBlockSelect = useCallback((blockId: EditableBlockId) => {
+    if (blockStreamingId != null) return
+    setSelectedBlockId((prev) => {
+      if (prev === blockId) return prev
+      clearBlockTimers()
+      setBlockThinkingId(null)
+      setBlockStreamingId(null)
+      setBlockFadeId(null)
+      setStreamingTarget(null)
+      return blockId
+    })
+  }, [clearBlockTimers, blockStreamingId])
+
+  const handleStreamingComplete = useCallback(
+    (blockId: EditableBlockId) => {
+      setEditBlockContent((prev) => ({
+        ...prev,
+        [blockId]: MOCK_AI_BLOCK_UPDATES[blockId],
+      }))
+      setStreamingTarget(null)
+      setBlockStreamingId(null)
+      setBlockFadeId(blockId)
+      fadeTimeoutRef.current = setTimeout(() => {
+        fadeTimeoutRef.current = null
+        setBlockFadeId(null)
+        const message =
+          blockId === "headline"
+            ? "Updated headline for clarity and impact."
+            : blockId === "body"
+              ? "Updated body text to three lines, improving clarity and highlighting platform value."
+              : "Updated CTA to be more direct and actionable."
+        aiPanelRef.current?.appendAIMessage(message)
+      }, FADE_MS)
+    },
+    [MOCK_AI_BLOCK_UPDATES]
+  )
+
+  const handleApplyToBlock = useCallback(
+    (prompt: string) => {
+      const blockId = selectedBlockId
+      if (!blockId || blockThinkingId || blockStreamingId) return
+      clearBlockTimers()
+      setBlockThinkingId(blockId)
+      thinkingTimeoutRef.current = setTimeout(() => {
+        thinkingTimeoutRef.current = null
+        setBlockThinkingId(null)
+        setStreamingTarget({ blockId, text: MOCK_AI_BLOCK_UPDATES[blockId] })
+        setBlockStreamingId(blockId)
+      }, THINKING_MS)
+    },
+    [selectedBlockId, blockThinkingId, blockStreamingId, clearBlockTimers, MOCK_AI_BLOCK_UPDATES]
+  )
+
+  useEffect(() => {
+    if (selectedBlockId && isEditModeOpen) {
+      chatInputRef.current?.focus()
+    }
+  }, [selectedBlockId, isEditModeOpen])
+
+  useEffect(() => {
+    if (!isEditModeOpen) {
+      setSelectedBlockId(null)
+      clearBlockTimers()
+      setBlockThinkingId(null)
+      setBlockStreamingId(null)
+      setBlockFadeId(null)
+      setStreamingTarget(null)
+    }
+  }, [isEditModeOpen, clearBlockTimers])
 
   /** Framed Side Pane: reference pane open width (px). Only this region's width changes. */
   const FRAMED_REFERENCE_PANE_WIDTH_PX = 524
@@ -782,15 +890,45 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                         
                         {/* Ad Copy */}
                         <div className="space-y-2">
-                          <p className="text-sm text-[#121212] font-medium">
-                            Spending more time reacting than driving results? You&apos;re not alone.
-                          </p>
-                          <p className="text-sm text-[#121212]">
-                            You&apos;re not alone. Data teams report spending less than half of their work week actually analyzing data. At CVS, ThoughtSpot helped reduce time-to-insight by 60%. With GenAI, you can finally focus on the strategic work that moves the needle.
-                          </p>
-                          <p className="text-sm text-[#0077b5] font-medium">
-                            See how to reclaim control of your career. Download the Dashboards are Dead, Gen AI edition.
-                          </p>
+                          <EditableTextBlock
+                            blockId="headline"
+                            isSelected={selectedBlockId === "headline"}
+                            isThinking={blockThinkingId === "headline"}
+                            isStreaming={blockStreamingId === "headline"}
+                            isFading={blockFadeId === "headline"}
+                            streamingText={streamingTarget?.blockId === "headline" ? streamingTarget.text : undefined}
+                            onStreamingComplete={() => handleStreamingComplete("headline")}
+                            onSelect={() => handleBlockSelect("headline")}
+                            className="text-sm text-[#121212] font-medium"
+                          >
+                            {editBlockContent.headline}
+                          </EditableTextBlock>
+                          <EditableTextBlock
+                            blockId="body"
+                            isSelected={selectedBlockId === "body"}
+                            isThinking={blockThinkingId === "body"}
+                            isStreaming={blockStreamingId === "body"}
+                            isFading={blockFadeId === "body"}
+                            streamingText={streamingTarget?.blockId === "body" ? streamingTarget.text : undefined}
+                            onStreamingComplete={() => handleStreamingComplete("body")}
+                            onSelect={() => handleBlockSelect("body")}
+                            className="text-sm text-[#121212] line-clamp-2"
+                          >
+                            {editBlockContent.body}
+                          </EditableTextBlock>
+                          <EditableTextBlock
+                            blockId="cta"
+                            isSelected={selectedBlockId === "cta"}
+                            isThinking={blockThinkingId === "cta"}
+                            isStreaming={blockStreamingId === "cta"}
+                            isFading={blockFadeId === "cta"}
+                            streamingText={streamingTarget?.blockId === "cta" ? streamingTarget.text : undefined}
+                            onStreamingComplete={() => handleStreamingComplete("cta")}
+                            onSelect={() => handleBlockSelect("cta")}
+                            className="text-sm text-[#0077b5] font-medium"
+                          >
+                            {editBlockContent.cta}
+                          </EditableTextBlock>
                         </div>
                         
                         {/* Ad Creative */}
@@ -879,15 +1017,45 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                         
                         {/* Ad Copy */}
                         <div className="space-y-2">
-                          <p className="text-sm text-[#121212] font-medium">
-                            Spending more time reacting than driving results? You&apos;re not alone.
-                          </p>
-                          <p className="text-sm text-[#121212]">
-                            You&apos;re not alone. Data teams report spending less than half of their work week actually analyzing data. At CVS, ThoughtSpot helped reduce time-to-insight by 60%. With GenAI, you can finally focus on the strategic work that moves the needle.
-                          </p>
-                          <p className="text-sm text-[#0077b5] font-medium">
-                            See how to reclaim control of your career. Download the Dashboards are Dead, Gen AI edition.
-                          </p>
+                          <EditableTextBlock
+                            blockId="headline"
+                            isSelected={selectedBlockId === "headline"}
+                            isThinking={blockThinkingId === "headline"}
+                            isStreaming={blockStreamingId === "headline"}
+                            isFading={blockFadeId === "headline"}
+                            streamingText={streamingTarget?.blockId === "headline" ? streamingTarget.text : undefined}
+                            onStreamingComplete={() => handleStreamingComplete("headline")}
+                            onSelect={() => handleBlockSelect("headline")}
+                            className="text-sm text-[#121212] font-medium"
+                          >
+                            {editBlockContent.headline}
+                          </EditableTextBlock>
+                          <EditableTextBlock
+                            blockId="body"
+                            isSelected={selectedBlockId === "body"}
+                            isThinking={blockThinkingId === "body"}
+                            isStreaming={blockStreamingId === "body"}
+                            isFading={blockFadeId === "body"}
+                            streamingText={streamingTarget?.blockId === "body" ? streamingTarget.text : undefined}
+                            onStreamingComplete={() => handleStreamingComplete("body")}
+                            onSelect={() => handleBlockSelect("body")}
+                            className="text-sm text-[#121212] line-clamp-2"
+                          >
+                            {editBlockContent.body}
+                          </EditableTextBlock>
+                          <EditableTextBlock
+                            blockId="cta"
+                            isSelected={selectedBlockId === "cta"}
+                            isThinking={blockThinkingId === "cta"}
+                            isStreaming={blockStreamingId === "cta"}
+                            isFading={blockFadeId === "cta"}
+                            streamingText={streamingTarget?.blockId === "cta" ? streamingTarget.text : undefined}
+                            onStreamingComplete={() => handleStreamingComplete("cta")}
+                            onSelect={() => handleBlockSelect("cta")}
+                            className="text-sm text-[#0077b5] font-medium"
+                          >
+                            {editBlockContent.cta}
+                          </EditableTextBlock>
                         </div>
                         
                         {/* Ad Creative */}
@@ -975,15 +1143,45 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                         
                         {/* Ad Copy */}
                         <div className="space-y-2">
-                          <p className="text-sm text-[#121212] font-medium">
-                            Spending more time reacting than driving results? You&apos;re not alone.
-                          </p>
-                          <p className="text-sm text-[#121212]">
-                            You&apos;re not alone. Data teams report spending less than half of their work week actually analyzing data. At CVS, ThoughtSpot helped reduce time-to-insight by 60%. With GenAI, you can finally focus on the strategic work that moves the needle.
-                          </p>
-                          <p className="text-sm text-[#0077b5] font-medium">
-                            See how to reclaim control of your career. Download the Dashboards are Dead, Gen AI edition.
-                          </p>
+                          <EditableTextBlock
+                            blockId="headline"
+                            isSelected={selectedBlockId === "headline"}
+                            isThinking={blockThinkingId === "headline"}
+                            isStreaming={blockStreamingId === "headline"}
+                            isFading={blockFadeId === "headline"}
+                            streamingText={streamingTarget?.blockId === "headline" ? streamingTarget.text : undefined}
+                            onStreamingComplete={() => handleStreamingComplete("headline")}
+                            onSelect={() => handleBlockSelect("headline")}
+                            className="text-sm text-[#121212] font-medium"
+                          >
+                            {editBlockContent.headline}
+                          </EditableTextBlock>
+                          <EditableTextBlock
+                            blockId="body"
+                            isSelected={selectedBlockId === "body"}
+                            isThinking={blockThinkingId === "body"}
+                            isStreaming={blockStreamingId === "body"}
+                            isFading={blockFadeId === "body"}
+                            streamingText={streamingTarget?.blockId === "body" ? streamingTarget.text : undefined}
+                            onStreamingComplete={() => handleStreamingComplete("body")}
+                            onSelect={() => handleBlockSelect("body")}
+                            className="text-sm text-[#121212] line-clamp-2"
+                          >
+                            {editBlockContent.body}
+                          </EditableTextBlock>
+                          <EditableTextBlock
+                            blockId="cta"
+                            isSelected={selectedBlockId === "cta"}
+                            isThinking={blockThinkingId === "cta"}
+                            isStreaming={blockStreamingId === "cta"}
+                            isFading={blockFadeId === "cta"}
+                            streamingText={streamingTarget?.blockId === "cta" ? streamingTarget.text : undefined}
+                            onStreamingComplete={() => handleStreamingComplete("cta")}
+                            onSelect={() => handleBlockSelect("cta")}
+                            className="text-sm text-[#0077b5] font-medium"
+                          >
+                            {editBlockContent.cta}
+                          </EditableTextBlock>
                         </div>
                         
                         {/* Ad Creative */}
@@ -1071,15 +1269,45 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                         
                         {/* Ad Copy */}
                         <div className="space-y-2">
-                          <p className="text-sm text-[#121212] font-medium">
-                            Spending more time reacting than driving results? You&apos;re not alone.
-                          </p>
-                          <p className="text-sm text-[#121212]">
-                            You&apos;re not alone. Data teams report spending less than half of their work week actually analyzing data. At CVS, ThoughtSpot helped reduce time-to-insight by 60%. With GenAI, you can finally focus on the strategic work that moves the needle.
-                          </p>
-                          <p className="text-sm text-[#0077b5] font-medium">
-                            See how to reclaim control of your career. Download the Dashboards are Dead, Gen AI edition.
-                          </p>
+                          <EditableTextBlock
+                            blockId="headline"
+                            isSelected={selectedBlockId === "headline"}
+                            isThinking={blockThinkingId === "headline"}
+                            isStreaming={blockStreamingId === "headline"}
+                            isFading={blockFadeId === "headline"}
+                            streamingText={streamingTarget?.blockId === "headline" ? streamingTarget.text : undefined}
+                            onStreamingComplete={() => handleStreamingComplete("headline")}
+                            onSelect={() => handleBlockSelect("headline")}
+                            className="text-sm text-[#121212] font-medium"
+                          >
+                            {editBlockContent.headline}
+                          </EditableTextBlock>
+                          <EditableTextBlock
+                            blockId="body"
+                            isSelected={selectedBlockId === "body"}
+                            isThinking={blockThinkingId === "body"}
+                            isStreaming={blockStreamingId === "body"}
+                            isFading={blockFadeId === "body"}
+                            streamingText={streamingTarget?.blockId === "body" ? streamingTarget.text : undefined}
+                            onStreamingComplete={() => handleStreamingComplete("body")}
+                            onSelect={() => handleBlockSelect("body")}
+                            className="text-sm text-[#121212] line-clamp-2"
+                          >
+                            {editBlockContent.body}
+                          </EditableTextBlock>
+                          <EditableTextBlock
+                            blockId="cta"
+                            isSelected={selectedBlockId === "cta"}
+                            isThinking={blockThinkingId === "cta"}
+                            isStreaming={blockStreamingId === "cta"}
+                            isFading={blockFadeId === "cta"}
+                            streamingText={streamingTarget?.blockId === "cta" ? streamingTarget.text : undefined}
+                            onStreamingComplete={() => handleStreamingComplete("cta")}
+                            onSelect={() => handleBlockSelect("cta")}
+                            className="text-sm text-[#0077b5] font-medium"
+                          >
+                            {editBlockContent.cta}
+                          </EditableTextBlock>
                         </div>
                         
                         {/* Ad Creative */}
@@ -1167,15 +1395,45 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                         
                         {/* Ad Copy */}
                         <div className="space-y-2">
-                          <p className="text-sm text-[#121212] font-medium">
-                            Spending more time reacting than driving results? You&apos;re not alone.
-                          </p>
-                          <p className="text-sm text-[#121212]">
-                            You&apos;re not alone. Data teams report spending less than half of their work week actually analyzing data. At CVS, ThoughtSpot helped reduce time-to-insight by 60%. With GenAI, you can finally focus on the strategic work that moves the needle.
-                          </p>
-                          <p className="text-sm text-[#0077b5] font-medium">
-                            See how to reclaim control of your career. Download the Dashboards are Dead, Gen AI edition.
-                          </p>
+                          <EditableTextBlock
+                            blockId="headline"
+                            isSelected={selectedBlockId === "headline"}
+                            isThinking={blockThinkingId === "headline"}
+                            isStreaming={blockStreamingId === "headline"}
+                            isFading={blockFadeId === "headline"}
+                            streamingText={streamingTarget?.blockId === "headline" ? streamingTarget.text : undefined}
+                            onStreamingComplete={() => handleStreamingComplete("headline")}
+                            onSelect={() => handleBlockSelect("headline")}
+                            className="text-sm text-[#121212] font-medium"
+                          >
+                            {editBlockContent.headline}
+                          </EditableTextBlock>
+                          <EditableTextBlock
+                            blockId="body"
+                            isSelected={selectedBlockId === "body"}
+                            isThinking={blockThinkingId === "body"}
+                            isStreaming={blockStreamingId === "body"}
+                            isFading={blockFadeId === "body"}
+                            streamingText={streamingTarget?.blockId === "body" ? streamingTarget.text : undefined}
+                            onStreamingComplete={() => handleStreamingComplete("body")}
+                            onSelect={() => handleBlockSelect("body")}
+                            className="text-sm text-[#121212] line-clamp-2"
+                          >
+                            {editBlockContent.body}
+                          </EditableTextBlock>
+                          <EditableTextBlock
+                            blockId="cta"
+                            isSelected={selectedBlockId === "cta"}
+                            isThinking={blockThinkingId === "cta"}
+                            isStreaming={blockStreamingId === "cta"}
+                            isFading={blockFadeId === "cta"}
+                            streamingText={streamingTarget?.blockId === "cta" ? streamingTarget.text : undefined}
+                            onStreamingComplete={() => handleStreamingComplete("cta")}
+                            onSelect={() => handleBlockSelect("cta")}
+                            className="text-sm text-[#0077b5] font-medium"
+                          >
+                            {editBlockContent.cta}
+                          </EditableTextBlock>
                         </div>
                         
                         {/* Ad Creative */}
@@ -1404,7 +1662,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                 exit={{ opacity: 0, y: -12 }}
                 transition={{ duration: 0.4, delay: 0.15 }}
               >
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
                   <button
                     onClick={() => setIsEditModeOpen(false)}
                     className="p-1 hover:bg-white/10 rounded transition-colors"
@@ -1413,13 +1671,13 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                     <X className="h-5 w-5 text-white" />
                   </button>
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 flex items-center justify-center shrink-0 rounded-[6px] bg-white">
+                    <div className="w-8 h-8 flex items-center justify-center shrink-0 rounded-[6px] bg-white">
                       <Image
                         src="/images/LinkedIn.svg"
                         alt="LinkedIn"
-                        width={20}
-                        height={20}
-                        className="w-5 h-5 object-contain"
+                        width={24}
+                        height={24}
+                        className="w-6 h-6 object-contain"
                       />
                     </div>
                     <span className="text-white text-lg font-semibold">
@@ -1450,7 +1708,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                   </DropdownMenu>
                 </div>
                 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
                   {/* Warning Tooltip */}
                   <div className="relative flex items-center group">
                     <AlertTriangle className="h-4 w-4 text-[#FF9500]" />
@@ -1493,40 +1751,31 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
 
               {/* Main Content Area */}
               <div className="flex-1 flex overflow-hidden">
-                {/* Left Chat Panel */}
+                {/* Left: AI Assistant Chat Panel */}
                 <motion.div
-                  className="w-80 bg-white border-r border-[#eaeaea] flex flex-col shrink-0"
+                  className="shrink-0 h-full"
                   initial={{ opacity: 0, x: 16 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 16 }}
                   transition={{ duration: 0.45, delay: 0.2 }}
                 >
-                  <div className="p-4 border-b border-[#eaeaea]">
-                    <h3 className="text-sm font-semibold text-[#121212]">Chat</h3>
-                  </div>
-                  <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                    {/* Chat messages can go here */}
-                    <div className="text-sm text-[#666666]">Start a conversation...</div>
-                  </div>
-                  <div className="p-4 border-t border-[#eaeaea]">
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Type a message..."
-                        className="flex-1 bg-[#F6F6F6] border-[#E5E5E5] focus:bg-white"
-                      />
-                      <Button className="bg-black text-white hover:bg-black/90">
-                        Send
-                      </Button>
-                    </div>
-                  </div>
+                  <AIPanel
+                    ref={aiPanelRef}
+                    mode="default"
+                    className="h-full"
+                    selectedBlockId={isEditModeOpen ? selectedBlockId : null}
+                    isBlockThinking={!!blockThinkingId || !!blockStreamingId || !!blockFadeId}
+                    onApplyToBlock={isEditModeOpen ? handleApplyToBlock : undefined}
+                    inputRef={chatInputRef}
+                  />
                 </motion.div>
 
                 {/* EditorLayout: LeftChat | CanvasWrapper | ReferencePane (Framed Side Pane) OR single grey canvas (other modes) */}
                 {editTopbarOption === "Framed Side Pane" ? (
-                  <div className="flex-1 flex min-w-0 overflow-hidden">
+                  <div className="flex-1 flex min-w-0 overflow-visible">
                   {/* CanvasWrapper: owns canvas space; Apple frame centers in available width */}
                   <div
-                    className="flex-1 flex flex-col min-w-0 overflow-y-auto overflow-x-hidden bg-[#EAEAEA] min-h-0"
+                    className="flex-1 flex flex-col min-w-0 overflow-y-auto overflow-x-visible bg-[#EAEAEA] min-h-0"
                     style={{
                       backgroundImage: `
                         linear-gradient(to right, rgba(0,0,0,0.02) 1px, transparent 1px),
@@ -1556,7 +1805,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                         <div
                           className="bg-white rounded-lg border border-[#eaeaea] p-4 shadow-sm hover:shadow-md transition-shadow h-[675px] flex flex-col min-h-0 w-full"
                         >
-                          <div className="space-y-3 flex-1 min-h-0 overflow-auto">
+                          <div className="space-y-3 flex-1 min-h-0 overflow-y-auto overflow-x-visible">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
                                 <div className="w-6 h-6 bg-[#0077b5] rounded flex items-center justify-center"><span className="text-white text-xs font-semibold">T.</span></div>
@@ -1575,9 +1824,45 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                               </DropdownMenu>
                             </div>
                             <div className="space-y-2">
-                              <p className="text-sm text-[#121212] font-medium">Spending more time reacting than driving results? You&apos;re not alone.</p>
-                              <p className="text-sm text-[#121212]">You&apos;re not alone. Data teams report spending less than half of their work week actually analyzing data. At CVS, ThoughtSpot helped reduce time-to-insight by 60%. With GenAI, you can finally focus on the strategic work that moves the needle.</p>
-                              <p className="text-sm text-[#0077b5] font-medium">See how to reclaim control of your career. Download the Dashboards are Dead, Gen AI edition.</p>
+                              <EditableTextBlock
+                                blockId="headline"
+                                isSelected={selectedBlockId === "headline"}
+                                isThinking={blockThinkingId === "headline"}
+                                isStreaming={blockStreamingId === "headline"}
+                                isFading={blockFadeId === "headline"}
+                                streamingText={streamingTarget?.blockId === "headline" ? streamingTarget.text : undefined}
+                                onStreamingComplete={() => handleStreamingComplete("headline")}
+                                onSelect={() => handleBlockSelect("headline")}
+                                className="text-sm text-[#121212] font-medium"
+                              >
+                                {editBlockContent.headline}
+                              </EditableTextBlock>
+                              <EditableTextBlock
+                                blockId="body"
+                                isSelected={selectedBlockId === "body"}
+                                isThinking={blockThinkingId === "body"}
+                                isStreaming={blockStreamingId === "body"}
+                                isFading={blockFadeId === "body"}
+                                streamingText={streamingTarget?.blockId === "body" ? streamingTarget.text : undefined}
+                                onStreamingComplete={() => handleStreamingComplete("body")}
+                                onSelect={() => handleBlockSelect("body")}
+                                className="text-sm text-[#121212]"
+                              >
+                                {editBlockContent.body}
+                              </EditableTextBlock>
+                              <EditableTextBlock
+                                blockId="cta"
+                                isSelected={selectedBlockId === "cta"}
+                                isThinking={blockThinkingId === "cta"}
+                                isStreaming={blockStreamingId === "cta"}
+                                isFading={blockFadeId === "cta"}
+                                streamingText={streamingTarget?.blockId === "cta" ? streamingTarget.text : undefined}
+                                onStreamingComplete={() => handleStreamingComplete("cta")}
+                                onSelect={() => handleBlockSelect("cta")}
+                                className="text-sm text-[#0077b5] font-medium"
+                              >
+                                {editBlockContent.cta}
+                              </EditableTextBlock>
                             </div>
                             <div className="space-y-2">
                               <div className="relative bg-black rounded-lg overflow-hidden">
@@ -1659,15 +1944,45 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                     </div>
                                     {/* Ad Copy */}
                                     <div className="space-y-2">
-                                      <p className="text-sm text-[#121212] font-medium">
-                                        Spending more time reacting than driving results? You&apos;re not alone.
-                                      </p>
-                                      <p className="text-sm text-[#121212]">
-                                        You&apos;re not alone. Data teams report spending less than half of their work week actually analyzing data. At CVS, ThoughtSpot helped reduce time-to-insight by 60%. With GenAI, you can finally focus on the strategic work that moves the needle.
-                                      </p>
-                                      <p className="text-sm text-[#0077b5] font-medium">
-                                        See how to reclaim control of your career. Download the Dashboards are Dead, Gen AI edition.
-                                      </p>
+                                      <EditableTextBlock
+                                        blockId="headline"
+                                        isSelected={selectedBlockId === "headline"}
+                                        isThinking={blockThinkingId === "headline"}
+                                        isStreaming={blockStreamingId === "headline"}
+                                        isFading={blockFadeId === "headline"}
+                                        streamingText={streamingTarget?.blockId === "headline" ? streamingTarget.text : undefined}
+                                        onStreamingComplete={() => handleStreamingComplete("headline")}
+                                        onSelect={() => handleBlockSelect("headline")}
+                                        className="text-sm text-[#121212] font-medium"
+                                      >
+                                        {editBlockContent.headline}
+                                      </EditableTextBlock>
+                                      <EditableTextBlock
+                                        blockId="body"
+                                        isSelected={selectedBlockId === "body"}
+                                        isThinking={blockThinkingId === "body"}
+                                        isStreaming={blockStreamingId === "body"}
+                                        isFading={blockFadeId === "body"}
+                                        streamingText={streamingTarget?.blockId === "body" ? streamingTarget.text : undefined}
+                                        onStreamingComplete={() => handleStreamingComplete("body")}
+                                        onSelect={() => handleBlockSelect("body")}
+                                        className="text-sm text-[#121212]"
+                                      >
+                                        {editBlockContent.body}
+                                      </EditableTextBlock>
+                                      <EditableTextBlock
+                                        blockId="cta"
+                                        isSelected={selectedBlockId === "cta"}
+                                        isThinking={blockThinkingId === "cta"}
+                                        isStreaming={blockStreamingId === "cta"}
+                                        isFading={blockFadeId === "cta"}
+                                        streamingText={streamingTarget?.blockId === "cta" ? streamingTarget.text : undefined}
+                                        onStreamingComplete={() => handleStreamingComplete("cta")}
+                                        onSelect={() => handleBlockSelect("cta")}
+                                        className="text-sm text-[#0077b5] font-medium"
+                                      >
+                                        {editBlockContent.cta}
+                                      </EditableTextBlock>
                                     </div>
                                     {/* Ad Creative */}
                                     <div className="space-y-2">
@@ -1730,7 +2045,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                 ) : (
                 /* Other modes: single grey canvas with overlay button and inline reference pane */
                 <div
-                  className={`relative flex-1 flex flex-col overflow-y-auto bg-[#EAEAEA] min-h-0 ${showReferences ? "overflow-x-auto" : "overflow-x-hidden"}`}
+                  className={`relative flex-1 flex flex-col overflow-y-auto bg-[#EAEAEA] min-h-0 ${showReferences ? "overflow-x-auto" : "overflow-x-visible"}`}
                   style={{
                     backgroundImage: `
                       linear-gradient(to right, rgba(0,0,0,0.02) 1px, transparent 1px),
@@ -1765,7 +2080,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                         animate={{ flex: showReferences ? "0 0 400px" : 1 }}
                         transition={{ type: "spring", stiffness: 70, damping: 18 }}
                         className="flex-shrink-0 flex flex-col items-center justify-center h-full"
-                        style={{ overflow: "hidden", minWidth: showReferences ? 400 : undefined }}
+                        style={{ overflow: "visible", minWidth: showReferences ? 400 : undefined }}
                       >
                       <motion.div
                         layout
@@ -1793,7 +2108,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                           className="bg-white rounded-lg border border-[#eaeaea] p-4 shadow-sm hover:shadow-md transition-shadow h-[675px] flex flex-col min-h-0 w-full"
                         >
                         {/* Ad Preview Content */}
-                        <div className="space-y-3 flex-1 min-h-0 overflow-auto">
+                        <div className="space-y-3 flex-1 min-h-0 overflow-y-auto overflow-x-visible">
                           {/* Header */}
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
@@ -1819,15 +2134,45 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                           
                           {/* Ad Copy */}
                           <div className="space-y-2">
-                            <p className="text-sm text-[#121212] font-medium">
-                              Spending more time reacting than driving results? You&apos;re not alone.
-                            </p>
-                            <p className="text-sm text-[#121212]">
-                              You&apos;re not alone. Data teams report spending less than half of their work week actually analyzing data. At CVS, ThoughtSpot helped reduce time-to-insight by 60%. With GenAI, you can finally focus on the strategic work that moves the needle.
-                            </p>
-                            <p className="text-sm text-[#0077b5] font-medium">
-                              See how to reclaim control of your career. Download the Dashboards are Dead, Gen AI edition.
-                            </p>
+                            <EditableTextBlock
+                              blockId="headline"
+                              isSelected={selectedBlockId === "headline"}
+                              isThinking={blockThinkingId === "headline"}
+                              isStreaming={blockStreamingId === "headline"}
+                              isFading={blockFadeId === "headline"}
+                              streamingText={streamingTarget?.blockId === "headline" ? streamingTarget.text : undefined}
+                              onStreamingComplete={() => handleStreamingComplete("headline")}
+                              onSelect={() => handleBlockSelect("headline")}
+                              className="text-sm text-[#121212] font-medium"
+                            >
+                              {editBlockContent.headline}
+                            </EditableTextBlock>
+                            <EditableTextBlock
+                              blockId="body"
+                              isSelected={selectedBlockId === "body"}
+                              isThinking={blockThinkingId === "body"}
+                              isStreaming={blockStreamingId === "body"}
+                              isFading={blockFadeId === "body"}
+                              streamingText={streamingTarget?.blockId === "body" ? streamingTarget.text : undefined}
+                              onStreamingComplete={() => handleStreamingComplete("body")}
+                              onSelect={() => handleBlockSelect("body")}
+                              className="text-sm text-[#121212]"
+                            >
+                              {editBlockContent.body}
+                            </EditableTextBlock>
+                            <EditableTextBlock
+                              blockId="cta"
+                              isSelected={selectedBlockId === "cta"}
+                              isThinking={blockThinkingId === "cta"}
+                              isStreaming={blockStreamingId === "cta"}
+                              isFading={blockFadeId === "cta"}
+                              streamingText={streamingTarget?.blockId === "cta" ? streamingTarget.text : undefined}
+                              onStreamingComplete={() => handleStreamingComplete("cta")}
+                              onSelect={() => handleBlockSelect("cta")}
+                              className="text-sm text-[#0077b5] font-medium"
+                            >
+                              {editBlockContent.cta}
+                            </EditableTextBlock>
                           </div>
                           
                           {/* Ad Creative */}
@@ -1927,15 +2272,45 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                     
                                     {/* Ad Copy */}
                                     <div className="space-y-2">
-                                      <p className="text-sm text-[#121212] font-medium">
-                                        Spending more time reacting than driving results? You&apos;re not alone.
-                                      </p>
-                                      <p className="text-sm text-[#121212]">
-                                        You&apos;re not alone. Data teams report spending less than half of their work week actually analyzing data. At CVS, ThoughtSpot helped reduce time-to-insight by 60%. With GenAI, you can finally focus on the strategic work that moves the needle.
-                                      </p>
-                                      <p className="text-sm text-[#0077b5] font-medium">
-                                        See how to reclaim control of your career. Download the Dashboards are Dead, Gen AI edition.
-                                      </p>
+                                      <EditableTextBlock
+                                        blockId="headline"
+                                        isSelected={selectedBlockId === "headline"}
+                                        isThinking={blockThinkingId === "headline"}
+                                        isStreaming={blockStreamingId === "headline"}
+                                        isFading={blockFadeId === "headline"}
+                                        streamingText={streamingTarget?.blockId === "headline" ? streamingTarget.text : undefined}
+                                        onStreamingComplete={() => handleStreamingComplete("headline")}
+                                        onSelect={() => handleBlockSelect("headline")}
+                                        className="text-sm text-[#121212] font-medium"
+                                      >
+                                        {editBlockContent.headline}
+                                      </EditableTextBlock>
+                                      <EditableTextBlock
+                                        blockId="body"
+                                        isSelected={selectedBlockId === "body"}
+                                        isThinking={blockThinkingId === "body"}
+                                        isStreaming={blockStreamingId === "body"}
+                                        isFading={blockFadeId === "body"}
+                                        streamingText={streamingTarget?.blockId === "body" ? streamingTarget.text : undefined}
+                                        onStreamingComplete={() => handleStreamingComplete("body")}
+                                        onSelect={() => handleBlockSelect("body")}
+                                        className="text-sm text-[#121212]"
+                                      >
+                                        {editBlockContent.body}
+                                      </EditableTextBlock>
+                                      <EditableTextBlock
+                                        blockId="cta"
+                                        isSelected={selectedBlockId === "cta"}
+                                        isThinking={blockThinkingId === "cta"}
+                                        isStreaming={blockStreamingId === "cta"}
+                                        isFading={blockFadeId === "cta"}
+                                        streamingText={streamingTarget?.blockId === "cta" ? streamingTarget.text : undefined}
+                                        onStreamingComplete={() => handleStreamingComplete("cta")}
+                                        onSelect={() => handleBlockSelect("cta")}
+                                        className="text-sm text-[#0077b5] font-medium"
+                                      >
+                                        {editBlockContent.cta}
+                                      </EditableTextBlock>
                                     </div>
                                     
                                     {/* Ad Creative */}

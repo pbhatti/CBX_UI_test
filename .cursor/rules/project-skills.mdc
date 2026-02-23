@@ -1,0 +1,16 @@
+---
+description: Always check and apply project skills when working in this codebase
+alwaysApply: true
+---
+
+# Project Skills (Always Apply)
+
+When working in this project, **always read and apply** the relevant skills before making changes:
+
+1. **`.cursor/skills/icons/`** — Use when adding/changing icons, fixing icon layout, or importing icon assets. Enforces fixed containers and standard sizes.
+
+2. **`.cursor/skills/web-design-guidelines/`** — Use when building or editing UI components. Covers accessibility, focus states, forms, animation, typography, performance, and UX best practices (Vercel Web Interface Guidelines).
+
+3. **`.agents/skills/remotion-best-practices/`** — Use when working with Remotion code (video, audio, captions, 3D, animations, etc.). Load the main SKILL.md and any relevant rules/*.md files for the task.
+
+Before editing code, check if any of these skills apply to your task. If they do, read the skill file and follow its instructions.

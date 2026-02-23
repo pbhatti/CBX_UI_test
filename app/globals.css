@@ -4,6 +4,12 @@
 
 @layer base {
   :root {
+    /* Delight Design System (Figma node 6823-60099) */
+    --AI-Expression-Subtle: linear-gradient(
+      271deg,
+      rgba(255, 210, 210, 0.30) -11.8%,
+      rgba(193, 189, 255, 0.30) 104.69%
+    );
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
     --card: 0 0% 100%;
@@ -44,5 +50,83 @@
   50% {
     background-position: 100% 50%;
   }
+}
+
+/* AI Expression: soft gradient drift - extends beyond block for organic bleed */
+.aiSubtleBg {
+  position: relative;
+  overflow: visible;
+}
+
+.aiSubtleBg::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  background: var(--AI-Expression-Subtle);
+  filter: blur(10px);
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+  will-change: transform;
+  pointer-events: none;
+  z-index: 0;
+  animation: aiSubtleDrift 16s ease-in-out infinite;
+}
+
+.aiSubtleBg.aiSubtleBgFade::before {
+  animation: aiSubtleFadeOut 600ms ease-out forwards;
+}
+
+@keyframes aiSubtleDrift {
+  0% {
+    transform: translate3d(-3%, -2%, 0) scale(1.1);
+  }
+  50% {
+    transform: translate3d(3%, 2%, 0) scale(1.15);
+  }
+  100% {
+    transform: translate3d(-3%, -2%, 0) scale(1.1);
+  }
+}
+
+@keyframes aiSubtleFadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aiSubtleBg::before {
+    animation: none;
+  }
+  .aiSubtleBg.aiSubtleBgFade::before {
+    animation: aiSubtleFadeOut 600ms ease-out forwards;
+  }
+}
+
+/* Delight Design System: text block border (Figma node 6823-60051) - 4px radius, 1px dashed, 4px/4px dash pattern */
+.aiBlockBorder {
+  border-radius: 4px;
+  border: 1px solid transparent;
+  background-image:
+    repeating-linear-gradient(90deg, var(--ai-block-border-color, #3B82F6) 0, var(--ai-block-border-color, #3B82F6) 4px, transparent 4px, transparent 8px),
+    repeating-linear-gradient(90deg, var(--ai-block-border-color, #3B82F6) 0, var(--ai-block-border-color, #3B82F6) 4px, transparent 4px, transparent 8px),
+    repeating-linear-gradient(0deg, var(--ai-block-border-color, #3B82F6) 0, var(--ai-block-border-color, #3B82F6) 4px, transparent 4px, transparent 8px),
+    repeating-linear-gradient(0deg, var(--ai-block-border-color, #3B82F6) 0, var(--ai-block-border-color, #3B82F6) 4px, transparent 4px, transparent 8px);
+  background-size: 8px 1px, 8px 1px, 1px 8px, 1px 8px;
+  background-position: 0 0, 0 100%, 0 0, 100% 0;
+  background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+  background-origin: border-box;
+}
+.aiBlockBorder.aiBlockBorderOverlay {
+  --ai-block-border-color: #862069;
+}
+.aiBlockBorder.aiBlockBorderHover {
+  --ai-block-border-color: transparent;
+}
+.aiBlockBorder.aiBlockBorderHover:hover {
+  --ai-block-border-color: #3B82F6;
 }
 
