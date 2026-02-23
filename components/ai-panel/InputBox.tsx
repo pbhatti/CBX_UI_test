@@ -8,6 +8,8 @@ export interface InputBoxProps {
   onSubmit: (text: string) => void
   disabled?: boolean
   placeholder?: string
+  /** When true, Apply button is enabled even when input is empty (e.g. when a block is selected). */
+  applyEnabledWhenEmpty?: boolean
 }
 
 export const InputBox = forwardRef<HTMLTextAreaElement, InputBoxProps>(function InputBox(
@@ -15,11 +17,13 @@ export const InputBox = forwardRef<HTMLTextAreaElement, InputBoxProps>(function 
     onSubmit,
     disabled = false,
     placeholder = "What change do you want to make?",
+    applyEnabledWhenEmpty = false,
   },
   ref
 ) {
   const [value, setValue] = useState("")
   const isEmpty = !value.trim()
+  const isApplyDisabled = disabled || (!applyEnabledWhenEmpty && isEmpty)
 
   const handleSubmit = useCallback(() => {
     const trimmed = value.trim()
@@ -37,27 +41,25 @@ export const InputBox = forwardRef<HTMLTextAreaElement, InputBoxProps>(function 
 
   return (
     <div className="shrink-0 p-4 border-t border-[#e5e5e5] bg-[#F8F8F8]">
-      <div className="flex flex-col gap-2">
+      <div className="relative w-full rounded-xl border border-[#e5e5e5] bg-white p-3">
         <Textarea
           ref={ref}
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="min-h-[80px] max-h-[120px] resize-none text-[13px] border-[#e5e5e5] bg-white rounded-xl px-3 py-2.5"
+          className="min-h-[80px] max-h-[120px] resize-none text-[13px] border-0 bg-transparent p-0 pr-16 pb-10 focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none"
           rows={3}
           disabled={disabled}
         />
-        <div className="flex justify-end">
-          <Button
-            type="button"
-            onClick={handleSubmit}
-            disabled={isEmpty || disabled}
-            className="bg-black text-white hover:bg-black/90 h-9 px-4 text-sm font-medium rounded-lg"
-          >
-            Apply
-          </Button>
-        </div>
+        <Button
+          type="button"
+          onClick={handleSubmit}
+          disabled={isApplyDisabled}
+          className="absolute bottom-3 right-3 h-6 px-4 text-xs font-medium rounded-lg bg-[#000000] text-white hover:bg-[#000000]/90 disabled:opacity-50"
+        >
+          Apply
+        </Button>
       </div>
     </div>
   )

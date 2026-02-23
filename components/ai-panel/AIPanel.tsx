@@ -132,7 +132,8 @@ export const AIPanel = forwardRef<AIPanelHandle, AIPanelProps>(function AIPanel(
     []
   )
 
-  const inputDisabled = isBlockThinking
+  const inputDisabled =
+    isBlockThinking || (onApplyToBlock != null && !selectedBlockId)
 
   return (
     <div
@@ -151,6 +152,7 @@ export const AIPanel = forwardRef<AIPanelHandle, AIPanelProps>(function AIPanel(
           onSubmit={handleSubmit}
           placeholder="What change do you want to make?"
           disabled={inputDisabled}
+          applyEnabledWhenEmpty={!!(onApplyToBlock && selectedBlockId)}
         />
       )}
     </div>
