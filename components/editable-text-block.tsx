@@ -101,7 +101,7 @@ export function EditableTextBlock({
         }
       }}
       className={cn(
-        "relative outline-none cursor-pointer transition-[box-shadow,background-color]",
+        "relative outline-none cursor-pointer transition-[box-shadow,background-color] p-1",
         showOverlay && "aiThinking",
         isFading && "aiThinkingFade",
         "aiBlockBorder",
