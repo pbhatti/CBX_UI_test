@@ -1,6 +1,6 @@
 "use client"
 
-import { X, ChevronDown, Settings, MoreVertical, MessageSquare, PanelLeftClose, ChevronRight, Search as SearchIcon, Sparkles, AlertTriangle } from "lucide-react"
+import { X, ChevronDown, Settings, MoreVertical, MessageSquare, PanelLeftClose, ChevronRight, Search as SearchIcon, Sparkles, AlertTriangle, Lock } from "lucide-react"
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion"
 import { useState, useEffect, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
@@ -18,6 +18,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Checkbox } from "@/components/ui/checkbox"
 
 interface BackgroundGradientProps {
   onClose: () => void
@@ -52,9 +54,48 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
   const [adsCount, setAdsCount] = useState(230)
   const [generateGeneric, setGenerateGeneric] = useState("yes")
   const [destination, setDestination] = useState("ai-generated")
-  const [editTopbarOption, setEditTopbarOption] = useState<"Edge-aligned Divider" | "Surface-based Separation" | "Framed Side Pane">("Edge-aligned Divider")
+  const [editTopbarOption, setEditTopbarOption] = useState<"Edge-aligned Divider" | "Surface-based Separation" | "Framed Side Pane">("Surface-based Separation")
   const [isFramedPaneAnimating, setIsFramedPaneAnimating] = useState(false)
   const framedPaneTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [referenceTitlesLoaded, setReferenceTitlesLoaded] = useState(false)
+  const referenceTitlesTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Select references popover (Figma: Personalisation by)
+  const [selectedPersona, setSelectedPersona] = useState("data-leader")
+  const [selectedAccounts, setSelectedAccounts] = useState<string[]>(["Tesla", "Reliance"])
+  const [accountSearch, setAccountSearch] = useState("")
+  const ALL_ACCOUNTS = ["Open AI", "Glean", "Block", "Tesla", "Niantic", "Anthropic", "Reliance", "Flipkart", "Unacademy"]
+  // Ad frames display in the same order as the checkbox list (first in list = first Ad frame)
+  const orderedSelectedAccounts = [...selectedAccounts].sort(
+    (a, b) => ALL_ACCOUNTS.indexOf(a) - ALL_ACCOUNTS.indexOf(b)
+  )
+  // Skeleton loader: each frame shows skeleton for 3 sec before content (Figma node 2514:59960)
+  const [loadedReferenceFrames, setLoadedReferenceFrames] = useState<Set<string>>(new Set())
+  const frameLoadTimeoutsRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
+  useEffect(() => {
+    orderedSelectedAccounts.forEach((companyName) => {
+      if (loadedReferenceFrames.has(companyName)) return
+      const id = setTimeout(() => {
+        setLoadedReferenceFrames((prev) => new Set(prev).add(companyName))
+        frameLoadTimeoutsRef.current.delete(companyName)
+      }, 3000)
+      frameLoadTimeoutsRef.current.set(companyName, id)
+    })
+    return () => {
+      frameLoadTimeoutsRef.current.forEach((id) => clearTimeout(id))
+      frameLoadTimeoutsRef.current.clear()
+    }
+  }, [orderedSelectedAccounts])
+  // Reset loaded state when accounts are removed so re-adding shows skeleton again
+  useEffect(() => {
+    setLoadedReferenceFrames((prev) => {
+      const next = new Set(prev)
+      next.forEach((company) => {
+        if (!orderedSelectedAccounts.includes(company)) next.delete(company)
+      })
+      return next
+    })
+  }, [orderedSelectedAccounts.join(",")])
 
   // Block-level AI edit (Framed Side Pane content frame)
   const [selectedBlockId, setSelectedBlockId] = useState<EditableBlockId | null>(null)
@@ -186,6 +227,30 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
       framedPaneTimeoutRef.current = null
     }, 800)
   }
+
+  /** When references are open, chat collapses to give more space; floating button restores it. */
+  const isChatCollapsed = showReferences
+
+  useEffect(() => {
+    if (showReferences) {
+      setReferenceTitlesLoaded(false)
+      referenceTitlesTimerRef.current = setTimeout(() => {
+        referenceTitlesTimerRef.current = null
+        setReferenceTitlesLoaded(true)
+      }, 6000)
+    } else {
+      if (referenceTitlesTimerRef.current) {
+        clearTimeout(referenceTitlesTimerRef.current)
+        referenceTitlesTimerRef.current = null
+      }
+      setReferenceTitlesLoaded(false)
+    }
+    return () => {
+      if (referenceTitlesTimerRef.current) {
+        clearTimeout(referenceTitlesTimerRef.current)
+      }
+    }
+  }, [showReferences])
 
   useEffect(() => {
     // Hide navigation after 8 seconds
@@ -1750,14 +1815,23 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
               </motion.div>
 
               {/* Main Content Area */}
-              <div className="flex-1 flex overflow-hidden">
-                {/* Left: AI Assistant Chat Panel */}
+              <div className="flex-1 flex overflow-hidden relative">
+                {/* Left: AI Assistant Chat Panel (collapses when references open; Chat button / Hide refs restores it) */}
                 <motion.div
-                  className="shrink-0 h-full"
-                  initial={{ opacity: 0, x: 16 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 16 }}
-                  transition={{ duration: 0.45, delay: 0.2 }}
+                  className="h-full overflow-hidden flex flex-col flex-shrink-0"
+                  initial={false}
+                  animate={{
+                    width: isChatCollapsed ? 0 : 360,
+                    minWidth: isChatCollapsed ? 0 : 360,
+                    flex: isChatCollapsed ? "0 0 0" : "0 0 360px",
+                    opacity: isChatCollapsed ? 0 : 1,
+                  }}
+                  transition={{
+                    width: { type: "tween", duration: 0.25, ease: [0.25, 0.1, 0.25, 1] },
+                    minWidth: { type: "tween", duration: 0.25, ease: [0.25, 0.1, 0.25, 1] },
+                    flex: { type: "tween", duration: 0.25, ease: [0.25, 0.1, 0.25, 1] },
+                    opacity: { type: "tween", duration: 0.2 },
+                  }}
                 >
                   <AIPanel
                     ref={aiPanelRef}
@@ -1912,14 +1986,50 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                         </button>
                         <div className="flex-1 min-h-0 overflow-y-auto overflow-x-auto p-4 flex items-center">
                           <div className="flex flex-row flex-nowrap gap-6 pb-4 pt-2">
-                            {["Tesla", "Reliance", "Flipkart", "Open AI", "Unacademy"].map((companyName, index) => (
-                              <div key={index} className="flex-shrink-0 w-[400px]">
+                            {orderedSelectedAccounts.map((companyName) => (
+                              <div key={companyName} className="flex-shrink-0 w-[400px]">
                                 <div className="flex items-center justify-between mb-2 w-full gap-3">
                                   <span className="text-xs font-medium text-[#5E5E5E] shrink-0">{companyName}</span>
                                 </div>
-                                <div className="bg-white rounded-lg border border-[#eaeaea] p-4 shadow-sm hover:shadow-md transition-shadow h-[675px] flex flex-col min-h-0 w-full">
+                                <div className="bg-white rounded-lg border border-[#eaeaea] shadow-sm h-[675px] flex flex-col min-h-0 w-full overflow-hidden">
+                                  {!loadedReferenceFrames.has(companyName) ? (
+                                    /* Skeleton loader - Figma 2514:59960, #F6F6F6 */
+                                    <div className="flex flex-col h-full">
+                                      <div className="p-4 flex flex-col gap-4 flex-shrink-0">
+                                        <div className="flex gap-6 items-start">
+                                          <div className="skeleton-shimmer shrink-0 size-12 rounded" aria-hidden />
+                                          <div className="flex flex-1 flex-col gap-1">
+                                            <div className="skeleton-shimmer h-3.5 rounded w-20" aria-hidden />
+                                            <div className="skeleton-shimmer h-3.5 rounded w-[104px]" aria-hidden />
+                                            <div className="skeleton-shimmer h-3.5 rounded w-16" aria-hidden />
+                                          </div>
+                                          <MoreVertical className="h-5 w-5 text-[#E5E5E5] shrink-0" aria-hidden />
+                                        </div>
+                                        <div className="flex flex-col gap-2">
+                                          <div className="skeleton-shimmer h-3.5 rounded w-full" aria-hidden />
+                                          <div className="skeleton-shimmer h-3.5 rounded w-full" aria-hidden />
+                                          <div className="skeleton-shimmer h-3.5 rounded w-[204px]" aria-hidden />
+                                        </div>
+                                        <div className="flex flex-col gap-2">
+                                          <div className="skeleton-shimmer h-3.5 rounded w-full" aria-hidden />
+                                          <div className="skeleton-shimmer h-3.5 rounded w-full" aria-hidden />
+                                          <div className="skeleton-shimmer h-3.5 rounded w-[204px]" aria-hidden />
+                                        </div>
+                                        <div className="flex flex-col gap-2">
+                                          <div className="skeleton-shimmer h-3.5 rounded w-full" aria-hidden />
+                                          <div className="skeleton-shimmer h-3.5 rounded w-[204px]" aria-hidden />
+                                        </div>
+                                      </div>
+                                      <div className="skeleton-shimmer flex-1 min-h-[120px]" aria-hidden />
+                                      <div className="bg-[#EDF4FE] flex items-center justify-center gap-1 p-4 rounded-b-lg flex-shrink-0">
+                                        <Lock className="h-5 w-5 text-[#215CDF]" aria-hidden />
+                                        <span className="text-sm font-semibold text-[#215CDF]">Unlock Full Document</span>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                  <>
                                   {/* Apple frame design - 400×675 */}
-                                  <div className="flex flex-col flex-1 min-h-0 space-y-3 overflow-y-auto">
+                                  <div className="flex flex-col flex-1 min-h-0 space-y-3 overflow-y-auto p-4">
                                     {/* Header */}
                                     <div className="flex items-center justify-between">
                                       <div className="flex items-center gap-2">
@@ -2021,6 +2131,8 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                       </button>
                                     </div>
                                   </div>
+                                  </>
+                                  )}
                                 </div>
                               </div>
                             ))}
@@ -2054,25 +2166,19 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                     backgroundSize: '20px 20px'
                   }}
                 >
-                  <button
-                    type="button"
-                    onClick={() => setShowReferences(!showReferences)}
-                    className="absolute top-4 right-4 z-10 inline-flex items-center justify-center gap-2 rounded-lg bg-[#F6F6F6] text-[#303030] hover:bg-[#EAEAEA] border-0 shadow-none h-8 w-[160px] pl-3 py-2 text-xs font-medium transition-colors"
-                    style={{ background: 'unset' }}
-                  >
-                      <span className="text-[#303030] w-[100px]">
-                        {showReferences ? "Hide references" : "View references"}
-                      </span>
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[#F6F6F6] border border-[#EAEAEA]">
-                        <Image
-                          src={showReferences ? "/images/Icon%20Right.svg" : "/images/Icon%20Left.svg"}
-                          alt=""
-                          width={16}
-                          height={16}
-                          className="h-4 w-4"
-                        />
+                  {!showReferences && (
+                    <button
+                      type="button"
+                      onClick={() => setShowReferences(true)}
+                      className="absolute top-4 right-4 z-10 inline-flex items-center justify-center gap-2 rounded-lg bg-[#F6F6F6] text-[#303030] hover:bg-[#EAEAEA] border-0 shadow-none h-8 w-[160px] pl-3 py-2 text-xs font-medium transition-colors"
+                      style={{ background: 'unset' }}
+                    >
+                      <span className="text-[#303030] w-[100px]">View references</span>
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[#F6F6F6]">
+                        <Image src="/images/Icon%20Left.svg" alt="" width={16} height={16} className="h-4 w-4" />
                       </span>
                     </button>
+                  )}
                   <div className="pl-6 py-0 flex-1 flex flex-col min-h-0 min-w-0" style={{ borderWidth: 0, borderColor: 'transparent', borderStyle: 'none', borderImage: 'none' }}>
                     <div className="max-w-8xl mx-auto flex flex-row gap-10 flex-1 items-center min-w-0 min-h-0 w-full">
                       <motion.div
@@ -2236,17 +2342,187 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                           className={`flex flex-col justify-stretch h-full w-full min-w-full ${!showReferences ? "pointer-events-none" : ""} ${showReferences ? "border-l border-[#D3D3D3]" : ""} ${editTopbarOption === "Surface-based Separation" ? "bg-[#F6F6F6]" : ""}`}
                           style={{ minWidth: "100%" }}
                         >
-                        <div className="overflow-x-auto -mx-6 pl-12 pr-6 w-full min-w-[1200px] pt-6 flex-1 min-h-0 flex items-center">
-                        <div className="flex flex-row flex-nowrap gap-6 pb-4 justify-center pt-10" style={{ width: 'max-content' }}>
+                        {/* Pane header: 48px height, label and button aligned left */}
+                        {showReferences && (
+                          <div className="flex-shrink-0 flex items-center justify-between gap-0 h-12 px-4 border-b border-[#D3D3D3] bg-white">
+                            <div className="flex items-center gap-2 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => setShowReferences(false)}
+                                aria-label="Collapse reference pane"
+                                className="flex h-8 w-8 shrink-0 items-center justify-center rounded hover:bg-[#EAEAEA] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#303030] focus-visible:ring-offset-2 transition-colors"
+                              >
+                                <Image src="/images/Icon%20Right.svg" alt="" width={16} height={16} className="h-4 w-4 rotate-180" aria-hidden />
+                              </button>
+                              <span className="text-sm font-medium text-[#303030]">References of other accounts</span>
+                            </div>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <button
+                                  type="button"
+                                  className="inline-flex items-center justify-center gap-0 rounded-lg bg-[#F6F6F6] text-[#303030] hover:bg-[#EAEAEA] border-0 shadow-none h-8 w-[168px] pl-0 pr-0 py-2 text-xs font-medium transition-colors"
+                                >
+                                  <span className="text-[#303030] w-[120px]">Select references</span>
+                                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[#F6F6F6]">
+                                    <ChevronDown className="h-4 w-4 text-[#303030]" />
+                                  </span>
+                                </button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="start" className="w-[350px] p-0 overflow-hidden rounded-lg border border-[#E5E5E5] bg-white shadow-lg">
+                                <div className="p-4 space-y-4">
+                                  {/* Personalisation by header */}
+                                  <div className="space-y-2">
+                                    <h3 className="text-sm font-semibold text-[#303030]">Personalisation by</h3>
+                                    <div className="flex items-center justify-between gap-2 rounded-md border border-[#E5E5E5] bg-[#F6F6F6] h-[30px] px-3">
+                                      <span className="text-xs text-[#303030]">Account and persona</span>
+                                      <div className="flex items-center gap-1 shrink-0">
+                                        <span className="text-xs text-[#5E5E5E]">(130)</span>
+                                        <ChevronDown className="h-4 w-4 text-[#303030]" aria-hidden />
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="h-px bg-[#E5E5E5]" />
+                                  {/* Personas */}
+                                  <div className="space-y-3">
+                                    <h4 className="text-sm font-semibold text-[#303030]">Personas</h4>
+                                    <RadioGroup value={selectedPersona} onValueChange={setSelectedPersona} className="flex flex-col gap-2">
+                                      <label className="flex items-center gap-2 cursor-pointer py-1.5 rounded hover:bg-[#F6F6F6] focus-within:bg-[#F6F6F6]">
+                                        <RadioGroupItem value="data-leader" id="persona-data" className="border-[#303030]" />
+                                        <span className="text-sm text-[#303030]">Data leader</span>
+                                      </label>
+                                      <label className="flex items-center gap-2 cursor-pointer py-1.5 rounded hover:bg-[#F6F6F6] focus-within:bg-[#F6F6F6]">
+                                        <RadioGroupItem value="digital-transformation" id="persona-digital" className="border-[#303030]" />
+                                        <span className="text-sm text-[#303030]">Digital transformation leader</span>
+                                      </label>
+                                      <label className="flex items-center gap-2 cursor-pointer py-1.5 rounded hover:bg-[#F6F6F6] focus-within:bg-[#F6F6F6]">
+                                        <RadioGroupItem value="product-leader" id="persona-product" className="border-[#303030]" />
+                                        <span className="text-sm text-[#303030]">Product leader</span>
+                                      </label>
+                                      <label className="flex items-center gap-2 cursor-pointer py-1.5 rounded hover:bg-[#F6F6F6] focus-within:bg-[#F6F6F6]">
+                                        <RadioGroupItem value="finance-leader" id="persona-finance" className="border-[#303030]" />
+                                        <span className="text-sm text-[#303030]">Finance leader</span>
+                                      </label>
+                                    </RadioGroup>
+                                  </div>
+                                  <div className="h-px bg-[#E5E5E5]" />
+                                  {/* Accounts */}
+                                  <div className="space-y-3">
+                                    <div>
+                                      <h4 className="text-sm font-semibold text-[#303030]">Accounts</h4>
+                                      <p className="text-xs text-[#5E5E5E] mt-1">You can select up to 2 accounts at a time</p>
+                                    </div>
+                                    {/* Selected tags */}
+                                    {selectedAccounts.length > 0 && (
+                                      <div className="flex flex-wrap gap-2">
+                                        {selectedAccounts.map((account) => (
+                                          <span
+                                            key={account}
+                                            className="inline-flex items-center gap-1.5 rounded-md bg-[#F6F6F6] px-2 py-1 text-xs text-[#303030]"
+                                          >
+                                            {account}
+                                            <button
+                                              type="button"
+                                              onClick={() => setSelectedAccounts((prev) => prev.filter((a) => a !== account))}
+                                              className="hover:bg-[#EAEAEA] rounded p-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#303030] focus-visible:ring-offset-1"
+                                              aria-label={`Remove ${account}`}
+                                            >
+                                              <X className="h-3 w-3" />
+                                            </button>
+                                          </span>
+                                        ))}
+                                      </div>
+                                    )}
+                                    {/* Search */}
+                                    <div className="relative">
+                                      <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#8E8E8E]" aria-hidden />
+                                      <Input
+                                        placeholder="Search accounts"
+                                        value={accountSearch}
+                                        onChange={(e) => setAccountSearch(e.target.value)}
+                                        className="pl-9 h-8 text-xs bg-[#F6F6F6] border-[#E5E5E5]"
+                                        aria-label="Search accounts"
+                                      />
+                                    </div>
+                                    {/* Account list */}
+                                    <div className="max-h-[200px] overflow-y-auto space-y-1 pr-1">
+                                      {ALL_ACCOUNTS.filter((a) =>
+                                        a.toLowerCase().includes(accountSearch.toLowerCase())
+                                      ).map((account) => (
+                                        <label
+                                          key={account}
+                                          className="flex items-center gap-2 cursor-pointer py-1.5 px-2 rounded hover:bg-[#F6F6F6] focus-within:bg-[#F6F6F6]"
+                                        >
+                                          <Checkbox
+                                            checked={selectedAccounts.includes(account)}
+                                            onCheckedChange={(checked) => {
+                                              setSelectedAccounts((prev) => {
+                                                if (checked) {
+                                                  if (prev.length >= 2) return prev
+                                                  return [...prev, account]
+                                                }
+                                                return prev.filter((a) => a !== account)
+                                              })
+                                            }}
+                                            disabled={!selectedAccounts.includes(account) && selectedAccounts.length >= 2}
+                                            className="border-[#303030] data-[state=checked]:bg-[#303030]"
+                                          />
+                                          <span className="text-sm text-[#303030]">{account}</span>
+                                        </label>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        )}
+                        <div className="overflow-x-auto -mx-6 pl-12 pr-6 w-full min-w-[1200px] pt-0 flex-1 min-h-0 flex items-center">
+                        <div className="flex flex-row flex-nowrap gap-6 pb-4 justify-center items-start" style={{ width: 'max-content' }}>
                           {/* Reference Cards */}
-                          {["Tesla", "Reliance", "Flipkart", "Open AI", "Unacademy"].map((companyName, index) => (
-                              <div key={index} className="flex-shrink-0 w-[400px]">
+                          {orderedSelectedAccounts.map((companyName) => (
+                              <div key={companyName} className="flex-shrink-0 w-[400px]">
                                 <div className="flex items-center justify-between mb-2 w-full gap-3">
                                   <span className="text-xs font-medium text-[#5E5E5E] shrink-0">{companyName}</span>
                                 </div>
-                                <div className="bg-white rounded-lg border border-[#eaeaea] p-4 shadow-sm hover:shadow-md transition-shadow h-[675px] flex flex-col min-h-0 w-full">
+                                <div className="bg-white rounded-lg border border-[#eaeaea] shadow-sm h-[675px] flex flex-col min-h-0 w-full overflow-hidden">
+                                  {!loadedReferenceFrames.has(companyName) ? (
+                                    /* Skeleton loader - Figma 2514:59960, #F6F6F6 */
+                                    <div className="flex flex-col h-full">
+                                      <div className="p-4 flex flex-col gap-4 flex-shrink-0">
+                                        <div className="flex gap-6 items-start">
+                                          <div className="skeleton-shimmer shrink-0 size-12 rounded" aria-hidden />
+                                          <div className="flex flex-1 flex-col gap-1">
+                                            <div className="skeleton-shimmer h-3.5 rounded w-20" aria-hidden />
+                                            <div className="skeleton-shimmer h-3.5 rounded w-[104px]" aria-hidden />
+                                            <div className="skeleton-shimmer h-3.5 rounded w-16" aria-hidden />
+                                          </div>
+                                          <MoreVertical className="h-5 w-5 text-[#E5E5E5] shrink-0" aria-hidden />
+                                        </div>
+                                        <div className="flex flex-col gap-2">
+                                          <div className="skeleton-shimmer h-3.5 rounded w-full" aria-hidden />
+                                          <div className="skeleton-shimmer h-3.5 rounded w-full" aria-hidden />
+                                          <div className="skeleton-shimmer h-3.5 rounded w-[204px]" aria-hidden />
+                                        </div>
+                                        <div className="flex flex-col gap-2">
+                                          <div className="skeleton-shimmer h-3.5 rounded w-full" aria-hidden />
+                                          <div className="skeleton-shimmer h-3.5 rounded w-full" aria-hidden />
+                                          <div className="skeleton-shimmer h-3.5 rounded w-[204px]" aria-hidden />
+                                        </div>
+                                        <div className="flex flex-col gap-2">
+                                          <div className="skeleton-shimmer h-3.5 rounded w-full" aria-hidden />
+                                          <div className="skeleton-shimmer h-3.5 rounded w-[204px]" aria-hidden />
+                                        </div>
+                                      </div>
+                                      <div className="skeleton-shimmer flex-1 min-h-[120px]" aria-hidden />
+                                      <div className="bg-[#EDF4FE] flex items-center justify-center gap-1 p-4 rounded-b-lg flex-shrink-0">
+                                        <Lock className="h-5 w-5 text-[#215CDF]" aria-hidden />
+                                        <span className="text-sm font-semibold text-[#215CDF]">Unlock Full Document</span>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                  <>
                                   {/* Ad Preview Content */}
-                                  <div className="flex flex-col flex-1 min-h-0 space-y-3 overflow-y-auto">
+                                  <div className="flex flex-col flex-1 min-h-0 space-y-3 overflow-y-auto p-4">
                                     {/* Header */}
                                     <div className="flex items-center justify-between">
                                       <div className="flex items-center gap-2">
@@ -2351,6 +2627,8 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                       </button>
                                     </div>
                                   </div>
+                                  </>
+                                  )}
                                 </div>
                               </div>
                             ))}
@@ -2361,6 +2639,33 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                     </div>
                   </div>
                 </div>
+                )}
+
+                {/* Floating Chat button: rendered last with high z-index so it stays on top; click opens chat and closes reference pane */}
+                {isChatCollapsed && (
+                  <motion.button
+                    type="button"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      if (editTopbarOption === "Framed Side Pane") {
+                        handleFramedPaneClose()
+                      } else {
+                        setShowReferences(false)
+                      }
+                    }}
+                    className="absolute left-2 top-2 z-[9999] flex items-center justify-between gap-0 rounded-lg bg-white border border-[#eaeaea] shadow-lg hover:bg-[#f6f6f6] h-11 w-[120px] cursor-pointer px-4"
+                    style={{ isolation: "isolate" }}
+                    aria-label="Open chat panel and close references"
+                  >
+                    <span className="text-sm font-medium text-[#303030]">Chat</span>
+                    <span className="w-5 h-5 flex items-center justify-center shrink-0">
+                      <Image src="/images/panel-left.svg" alt="" width={20} height={20} className="w-5 h-5" />
+                    </span>
+                  </motion.button>
                 )}
               </div>
             </motion.div>

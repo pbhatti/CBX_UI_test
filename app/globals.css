@@ -142,3 +142,30 @@
   --ai-block-border-color: #3B82F6;
 }
 
+/* Skeleton shimmer: pure CSS loading animation */
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #F6F6F6 0%,
+    #F6F6F6 40%,
+    #FAFAFA 50%,
+    #F6F6F6 60%,
+    #F6F6F6 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 4s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer {
+    animation: none;
+    background: #F6F6F6;
+    background-size: auto;
+  }
+}
+
