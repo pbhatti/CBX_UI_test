@@ -1,6 +1,6 @@
 "use client"
 
-import { X, ChevronDown, Settings, MoreVertical, MessageSquare, PanelLeftClose, ChevronRight, Search as SearchIcon, Sparkles, AlertTriangle, Lock, PenLine, Expand, Clock3, Copy, Tag } from "lucide-react"
+import { X, ChevronDown, Settings, MoreVertical, MessageSquare, PanelLeftClose, ChevronRight, Search as SearchIcon, Sparkles, AlertTriangle, Lock, PenLine, Expand, Clock3, Copy, Tag, type LucideIcon } from "lucide-react"
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion"
 import { useState, useEffect, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
@@ -98,6 +98,36 @@ function GoogleAdsPlacementSwitcher({
           </button>
         )
       })}
+    </div>
+  )
+}
+
+function FloatingFrameToolbar({
+  actions,
+  className = "",
+}: {
+  actions: Array<{
+    icon: LucideIcon
+    label: string
+    onClick?: () => void
+  }>
+  className?: string
+}) {
+  return (
+    <div className={`absolute top-0 right-[-60px] flex flex-col gap-1 rounded-lg border border-[#f6f6f6] bg-white p-[3px] shadow-[0px_4px_8px_0px_rgba(18,18,18,0.12)] ${className}`}>
+      {actions.map(({ icon: Icon, label, onClick }) => (
+        <button
+          key={label}
+          type="button"
+          aria-label={label}
+          onClick={onClick}
+          className="flex h-10 w-10 items-center justify-center rounded-[4px] transition-colors hover:bg-[#f6f6f6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#303030] focus-visible:ring-offset-1"
+        >
+          <span className="flex h-4 w-4 shrink-0 items-center justify-center">
+            <Icon className="h-4 w-4 text-[#303030]" aria-hidden="true" />
+          </span>
+        </button>
+      ))}
     </div>
   )
 }
@@ -287,6 +317,12 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
   const handleGoogleAdsTextBlockSelect = useCallback((section: GoogleAdsSection, blockId: string) => {
     setSelectedGoogleAdsSection(section)
     setSelectedGoogleAdsTextBlockId(blockId)
+  }, [])
+
+  const handleLinkedInAdEditOpen = useCallback((companyName: string) => {
+    setEditModeCompanyName(companyName)
+    setContentViewType("linkedin-ads")
+    setIsEditModeOpen(true)
   }, [])
 
   useEffect(() => {
@@ -1140,7 +1176,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                             </div>
                           </div>
 
-                          <div className="flex flex-col gap-1 rounded-lg border border-[#F6F6F6] bg-white p-1 shadow-[0px_4px_8px_0px_rgba(18,18,18,0.12)]">
+                          <div className="flex flex-col gap-1 rounded-lg border border-[#F6F6F6] bg-white p-[3px] shadow-[0px_4px_8px_0px_rgba(18,18,18,0.12)]">
                             {[
                               { icon: PenLine, label: "Edit Google Ads frame" },
                               { icon: Sparkles, label: "Regenerate Google Ads frame" },
@@ -1313,7 +1349,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                 </div>
                               </div>
                             </div>
-                            <div className="absolute top-0 right-[-60px] bg-white border border-[#f6f6f6] rounded-lg shadow-[0px_4px_8px_0px_rgba(18,18,18,0.12)] p-1 flex flex-col gap-1">
+                            <div className="absolute top-0 right-[-60px] bg-white border border-[#f6f6f6] rounded-lg shadow-[0px_4px_8px_0px_rgba(18,18,18,0.12)] p-[3px] flex flex-col gap-1">
                               {[
                                 { icon: PenLine, label: "Edit landing page" },
                                 { icon: Expand, label: "Expand landing page" },
@@ -1352,7 +1388,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                     <motion.div 
                       layout
                       layoutId="apple-frame"
-                      className="flex-shrink-0 w-[400px]"
+                      className="flex-shrink-0 pr-[60px]"
                       initial={{ x: 200, opacity: 0 }}
                       animate={{ x: 0, opacity: 1 }}
                       transition={{ type: "spring", stiffness: 150, damping: 24 }}
@@ -1367,6 +1403,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                           <span className="text-sm font-medium text-[#303030]">3</span>
                         </div>
                       </div>
+                      <div className="relative w-[400px]">
                       <div
                         className="bg-white rounded-lg border border-[#eaeaea] p-4 shadow-sm hover:shadow-md transition-shadow"
                       >
@@ -1389,7 +1426,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                               </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => setIsEditModeOpen(true)}>Edit</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleLinkedInAdEditOpen("Apple")}>Edit</DropdownMenuItem>
                               <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -1477,12 +1514,22 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                         </div>
                         </div>
                       </div>
+                      <FloatingFrameToolbar
+                        actions={[
+                          { icon: PenLine, label: "Edit LinkedIn ad", onClick: () => handleLinkedInAdEditOpen("Apple") },
+                          { icon: Expand, label: "Expand LinkedIn ad" },
+                          { icon: Sparkles, label: "Regenerate LinkedIn ad" },
+                          { icon: Clock3, label: "View version history" },
+                          { icon: MoreVertical, label: "More actions" },
+                        ]}
+                      />
+                      </div>
                     </motion.div>
                   )}
                   
                   {/* Tesla Column */}
                   <motion.div 
-                    className="flex-shrink-0 w-[400px]"
+                    className="flex-shrink-0 pr-[60px]"
                     initial={{ x: 200, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     transition={{ duration: 2, ease: [0.4, 0, 0.2, 1], delay: 0.2 }}
@@ -1496,6 +1543,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                         <span className="text-sm font-medium text-[#303030]">3</span>
                       </div>
                     </div>
+                    <div className="relative w-[400px]">
                     <div className="bg-white rounded-lg border border-[#eaeaea] p-4 shadow-sm hover:shadow-md transition-shadow">
                       {/* Ad Preview Content */}
                       <div className="space-y-3">
@@ -1516,7 +1564,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                               </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => setIsEditModeOpen(true)}>Edit</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleLinkedInAdEditOpen("Tesla")}>Edit</DropdownMenuItem>
                               <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -1604,11 +1652,21 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                         </div>
                       </div>
                     </div>
+                    <FloatingFrameToolbar
+                      actions={[
+                        { icon: PenLine, label: "Edit LinkedIn ad", onClick: () => handleLinkedInAdEditOpen("Tesla") },
+                        { icon: Expand, label: "Expand LinkedIn ad" },
+                        { icon: Sparkles, label: "Regenerate LinkedIn ad" },
+                        { icon: Clock3, label: "View version history" },
+                        { icon: MoreVertical, label: "More actions" },
+                      ]}
+                    />
+                    </div>
                   </motion.div>
                   
                   {/* Reliance Column */}
                   <motion.div 
-                    className="flex-shrink-0 w-[400px]"
+                    className="flex-shrink-0 pr-[60px]"
                     initial={{ x: 200, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     transition={{ duration: 2, ease: [0.4, 0, 0.2, 1], delay: 0.4 }}
@@ -1622,6 +1680,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                         <span className="text-sm font-medium text-[#303030]">3</span>
                       </div>
                     </div>
+                    <div className="relative w-[400px]">
                     <div className="bg-white rounded-lg border border-[#eaeaea] p-4 shadow-sm hover:shadow-md transition-shadow">
                       {/* Ad Preview Content */}
                       <div className="space-y-3">
@@ -1642,7 +1701,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                               </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => setIsEditModeOpen(true)}>Edit</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleLinkedInAdEditOpen("Reliance")}>Edit</DropdownMenuItem>
                               <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -1730,11 +1789,21 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                         </div>
                       </div>
                     </div>
+                    <FloatingFrameToolbar
+                      actions={[
+                        { icon: PenLine, label: "Edit LinkedIn ad", onClick: () => handleLinkedInAdEditOpen("Reliance") },
+                        { icon: Expand, label: "Expand LinkedIn ad" },
+                        { icon: Sparkles, label: "Regenerate LinkedIn ad" },
+                        { icon: Clock3, label: "View version history" },
+                        { icon: MoreVertical, label: "More actions" },
+                      ]}
+                    />
+                    </div>
                   </motion.div>
                   
                   {/* Myntra Column */}
                   <motion.div 
-                    className="flex-shrink-0 w-[400px]"
+                    className="flex-shrink-0 pr-[60px]"
                     initial={{ x: 200, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     transition={{ duration: 2, ease: [0.4, 0, 0.2, 1], delay: 0.6 }}
@@ -1748,6 +1817,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                         <span className="text-sm font-medium text-[#303030]">3</span>
                       </div>
                     </div>
+                    <div className="relative w-[400px]">
                     <div className="bg-white rounded-lg border border-[#eaeaea] p-4 shadow-sm hover:shadow-md transition-shadow">
                       {/* Ad Preview Content */}
                       <div className="space-y-3">
@@ -1768,7 +1838,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                               </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => setIsEditModeOpen(true)}>Edit</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleLinkedInAdEditOpen("Myntra")}>Edit</DropdownMenuItem>
                               <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -1856,11 +1926,21 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                         </div>
                       </div>
                     </div>
+                    <FloatingFrameToolbar
+                      actions={[
+                        { icon: PenLine, label: "Edit LinkedIn ad", onClick: () => handleLinkedInAdEditOpen("Myntra") },
+                        { icon: Expand, label: "Expand LinkedIn ad" },
+                        { icon: Sparkles, label: "Regenerate LinkedIn ad" },
+                        { icon: Clock3, label: "View version history" },
+                        { icon: MoreVertical, label: "More actions" },
+                      ]}
+                    />
+                    </div>
                   </motion.div>
                   
                   {/* Open AI Column */}
                   <motion.div 
-                    className="flex-shrink-0 w-[400px]"
+                    className="flex-shrink-0 pr-[60px]"
                     initial={{ x: 200, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     transition={{ duration: 2, ease: [0.4, 0, 0.2, 1], delay: 1.0 }}
@@ -1874,6 +1954,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                         <span className="text-sm font-medium text-[#303030]">3</span>
                       </div>
                     </div>
+                    <div className="relative w-[400px]">
                     <div className="bg-white rounded-lg border border-[#eaeaea] p-4 shadow-sm hover:shadow-md transition-shadow">
                       {/* Ad Preview Content */}
                       <div className="space-y-3">
@@ -1894,7 +1975,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                               </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => setIsEditModeOpen(true)}>Edit</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleLinkedInAdEditOpen("Open AI")}>Edit</DropdownMenuItem>
                               <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -1981,6 +2062,16 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                           </button>
                         </div>
                       </div>
+                    </div>
+                    <FloatingFrameToolbar
+                      actions={[
+                        { icon: PenLine, label: "Edit LinkedIn ad", onClick: () => handleLinkedInAdEditOpen("Open AI") },
+                        { icon: Expand, label: "Expand LinkedIn ad" },
+                        { icon: Sparkles, label: "Regenerate LinkedIn ad" },
+                        { icon: Clock3, label: "View version history" },
+                        { icon: MoreVertical, label: "More actions" },
+                      ]}
+                    />
                     </div>
                   </motion.div>
                     </>
@@ -2212,7 +2303,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                         ? `Editing Landing page for ${editModeCompanyName}`
                         : contentViewType === "google-ads"
                           ? "Editing Google ad"
-                          : "Editing Linkedin ad for Apple"}
+                          : `Editing Linkedin ad for ${editModeCompanyName}`}
                     </span>
                   </div>
                   {contentViewType !== "google-ads" && (
