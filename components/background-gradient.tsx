@@ -3445,11 +3445,11 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                               <DropdownMenuTrigger asChild>
                                 <button
                                   type="button"
-                                  className="inline-flex items-center justify-center gap-0 rounded-lg bg-[#F6F6F6] text-[#303030] hover:bg-[#EAEAEA] border-0 shadow-none h-8 w-[168px] pl-0 pr-0 py-2 text-xs font-medium transition-colors"
+                                  className="inline-flex h-8 w-[168px] items-center gap-[2px] overflow-hidden rounded-lg border border-[#EAEAEA] bg-white pl-2 pr-[2px] py-[2px] text-xs font-medium text-[#121212] transition-colors hover:bg-[#F6F6F6] data-[state=open]:border-[#121212] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#303030] focus-visible:ring-offset-2"
                                 >
-                                  <span className="text-[#303030] w-[120px]">Select references</span>
-                                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[#F6F6F6]">
-                                    <ChevronDown className="h-4 w-4 text-[#303030]" />
+                                  <span className="min-w-0 flex-1 text-left text-[#121212]">Select references</span>
+                                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[6px]">
+                                    <ChevronDown className="h-4 w-4 text-[#303030]" aria-hidden="true" />
                                   </span>
                                 </button>
                               </DropdownMenuTrigger>
