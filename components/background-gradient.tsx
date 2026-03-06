@@ -1,6 +1,6 @@
 "use client"
 
-import { X, ChevronDown, Settings, MoreVertical, MessageSquare, PanelLeftClose, ChevronRight, Search as SearchIcon, Sparkles, AlertTriangle, Lock } from "lucide-react"
+import { X, ChevronDown, Settings, MoreVertical, MessageSquare, PanelLeftClose, ChevronRight, Search as SearchIcon, Sparkles, AlertTriangle, Lock, PenLine, Expand, Clock3, Copy, Tag } from "lucide-react"
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion"
 import { useState, useEffect, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
@@ -26,6 +26,82 @@ interface BackgroundGradientProps {
   onHideNav?: () => void
 }
 
+type GoogleAdsSection = "headlines" | "long-headline" | "descriptions" | "cta"
+type GoogleAdsPlacement = "Display" | "Gmail" | "Youtube"
+
+const GOOGLE_AD_PLACEMENT_OPTIONS: Array<{
+  label: GoogleAdsPlacement
+  iconSrc: string
+  iconAlt: string
+}> = [
+  {
+    label: "Display",
+    iconSrc: "http://localhost:3845/assets/1c4c35e9ab2bd96817294f4f4d3978805a0dfd40.svg",
+    iconAlt: "Display ads icon",
+  },
+  {
+    label: "Gmail",
+    iconSrc: "http://localhost:3845/assets/16ea2add265315cc6ae56db48cf51224c0faf1df.png",
+    iconAlt: "Gmail icon",
+  },
+  {
+    label: "Youtube",
+    iconSrc: "http://localhost:3845/assets/cf8cd2977e6c04b58e65ddb229c13a296e59ae83.png",
+    iconAlt: "YouTube icon",
+  },
+]
+
+function GoogleAdsPlacementSwitcher({
+  value,
+  onChange,
+  className = "",
+}: {
+  value: GoogleAdsPlacement
+  onChange: (placement: GoogleAdsPlacement) => void
+  className?: string
+}) {
+  return (
+    <div className={`inline-flex items-center rounded-[10px] bg-[#EAEAEA] p-[2px] ${className}`}>
+      {GOOGLE_AD_PLACEMENT_OPTIONS.map(({ label, iconSrc, iconAlt }) => {
+        const isActive = value === label
+
+        return (
+          <button
+            key={label}
+            type="button"
+            onClick={() => onChange(label)}
+            aria-pressed={isActive}
+            className={`relative flex items-center justify-center gap-2 rounded-[8px] px-3 py-[9px] text-xs font-medium leading-[1.4] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#303030] focus-visible:ring-offset-1 ${
+              isActive
+                ? "text-[#121212]"
+                : "bg-transparent text-[#303030] hover:bg-white/60"
+            }`}
+          >
+            {isActive && (
+              <motion.span
+                layoutId="google-ads-placement-pill"
+                className="absolute inset-0 rounded-[8px] bg-white shadow-[0px_1px_4px_0px_rgba(0,0,0,0.18)]"
+                transition={{ type: "spring", stiffness: 420, damping: 34 }}
+              />
+            )}
+            <span className="relative z-[1] flex h-4 w-4 shrink-0 items-center justify-center">
+              <img
+                src={iconSrc}
+                alt=""
+                aria-hidden="true"
+                width={16}
+                height={16}
+                className="max-h-4 w-auto max-w-4 object-contain"
+              />
+            </span>
+            <span className="relative z-[1]">{label}</span>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientProps) {
   const router = useRouter()
   const words = ["Quality", "takes", "a", "moment.", "You'll", "see", "why", "..."]
@@ -48,7 +124,12 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
   const [isCommentsPanelOpen, setIsCommentsPanelOpen] = useState(false)
   const [isPublishSettingsModalOpen, setIsPublishSettingsModalOpen] = useState(false)
   const [isEditModeOpen, setIsEditModeOpen] = useState(false)
+  const [editModeCompanyName, setEditModeCompanyName] = useState("Apple")
   const [showReferences, setShowReferences] = useState(false)
+  const [contentViewType, setContentViewType] = useState<"linkedin-ads" | "landing-pages" | "google-ads">("linkedin-ads")
+  const [selectedGoogleAdsSection, setSelectedGoogleAdsSection] = useState<GoogleAdsSection>("headlines")
+  const [selectedGoogleAdsTextBlockId, setSelectedGoogleAdsTextBlockId] = useState("headline-0")
+  const [selectedGoogleAdsPlacement, setSelectedGoogleAdsPlacement] = useState<GoogleAdsPlacement>("Display")
   const [progress, setProgress] = useState(0)
   const [landingPagesCount, setLandingPagesCount] = useState(230)
   const [adsCount, setAdsCount] = useState(230)
@@ -65,6 +146,23 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
   const [selectedAccounts, setSelectedAccounts] = useState<string[]>(["Tesla", "Reliance"])
   const [accountSearch, setAccountSearch] = useState("")
   const ALL_ACCOUNTS = ["Open AI", "Glean", "Block", "Tesla", "Niantic", "Anthropic", "Reliance", "Flipkart", "Unacademy"]
+  const LANDING_PAGE_PREVIEW_ACCOUNTS = ["Apple", "Tesla", "Reliance"]
+  const GOOGLE_AD_HEADLINES = [
+    "Accelerate sales growth",
+    "Unprecedented sales growth",
+    "Record-breaking sales expansion",
+    "Unlock Data Power",
+    "Faster pipeline velocity",
+  ]
+  const GOOGLE_AD_DESCRIPTIONS = [
+    "Unlock rapid growth with analytics product! Our customers have seen a 30% increase in efficiency.",
+    "Sales performance has surged, highlighting the success of our recent strategies.",
+    "We see a rise in sales, reflecting our efforts and positive product reception.",
+    "Track your sales effortlessly with our intuitive product, designed to provide real-time insights.",
+    "Our sales CRM product has seen a significant boost in sales.",
+  ]
+  const FIGMA_LANDING_LOGO = "/images/Adobe.png"
+  const FIGMA_LANDING_HERO = "/images/Flower.png"
   // Ad frames display in the same order as the checkbox list (first in list = first Ad frame)
   const orderedSelectedAccounts = [...selectedAccounts].sort(
     (a, b) => ALL_ACCOUNTS.indexOf(a) - ALL_ACCOUNTS.indexOf(b)
@@ -186,6 +284,11 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
     [selectedBlockId, blockThinkingId, blockStreamingId, clearBlockTimers, MOCK_AI_BLOCK_UPDATES]
   )
 
+  const handleGoogleAdsTextBlockSelect = useCallback((section: GoogleAdsSection, blockId: string) => {
+    setSelectedGoogleAdsSection(section)
+    setSelectedGoogleAdsTextBlockId(blockId)
+  }, [])
+
   useEffect(() => {
     if (selectedBlockId && isEditModeOpen) {
       chatInputRef.current?.focus()
@@ -202,6 +305,8 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
       setStreamingTarget(null)
     }
   }, [isEditModeOpen, clearBlockTimers])
+
+  const isGoogleAdsEditMode = isEditModeOpen && contentViewType === "google-ads"
 
   /** Framed Side Pane: reference pane open width (px). Only this region's width changes. */
   const FRAMED_REFERENCE_PANE_WIDTH_PX = 524
@@ -228,8 +333,14 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
     }, 800)
   }
 
+  useEffect(() => {
+    if (isGoogleAdsEditMode && showReferences) {
+      setShowReferences(false)
+    }
+  }, [isGoogleAdsEditMode, showReferences])
+
   /** When references are open, chat collapses to give more space; floating button restores it. */
-  const isChatCollapsed = showReferences
+  const isChatCollapsed = !isGoogleAdsEditMode && showReferences
 
   useEffect(() => {
     if (showReferences) {
@@ -455,13 +566,57 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                   <div className="flex flex-col gap-3">
                     {/* Switcher Tabs */}
                     <div className="bg-[#eaeaea] h-8 flex items-center p-1 rounded-[10px]">
-                      <div className="flex-1 bg-white rounded-lg shadow-[0px_1px_4px_0px_rgba(0,0,0,0.18)] h-full flex items-center justify-center">
-                        <span className="text-xs font-medium text-[#121212]">LinkedIn Ads (233)</span>
-                      </div>
-                      <div className="flex-1 h-full flex items-center justify-center rounded-lg">
-                        <span className="text-xs font-medium text-[#303030]">Landing pages (256)</span>
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setContentViewType("linkedin-ads")}
+                        aria-pressed={contentViewType === "linkedin-ads"}
+                        className={`relative flex-1 h-full flex items-center justify-center rounded-lg text-xs font-medium transition-colors ${
+                          contentViewType === "linkedin-ads"
+                            ? "text-[#121212]"
+                            : "text-[#303030] hover:bg-white/60"
+                        }`}
+                      >
+                        {contentViewType === "linkedin-ads" && (
+                          <motion.span
+                            layoutId="content-view-toggle-pill"
+                            className="absolute inset-0 rounded-lg bg-white shadow-[0px_1px_4px_0px_rgba(0,0,0,0.18)]"
+                            transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                          />
+                        )}
+                        <span className="relative z-[1]">LinkedIn Ads (233)</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setContentViewType("landing-pages")}
+                        aria-pressed={contentViewType === "landing-pages"}
+                        className={`relative flex-1 h-full flex items-center justify-center rounded-lg text-xs font-medium transition-colors ${
+                          contentViewType === "landing-pages"
+                            ? "text-[#121212]"
+                            : "text-[#303030] hover:bg-white/60"
+                        }`}
+                      >
+                        {contentViewType === "landing-pages" && (
+                          <motion.span
+                            layoutId="content-view-toggle-pill"
+                            className="absolute inset-0 rounded-lg bg-white shadow-[0px_1px_4px_0px_rgba(0,0,0,0.18)]"
+                            transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                          />
+                        )}
+                        <span className="relative z-[1]">Landing pages (256)</span>
+                      </button>
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => setContentViewType("google-ads")}
+                      aria-pressed={contentViewType === "google-ads"}
+                      className={`h-8 w-full rounded-[10px] px-3 text-left text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#303030] focus-visible:ring-offset-1 ${
+                        contentViewType === "google-ads"
+                          ? "bg-white text-[#121212] shadow-[0px_1px_4px_0px_rgba(0,0,0,0.18)]"
+                          : "bg-[#f6f6f6] text-[#303030] hover:bg-[#eaeaea]"
+                      }`}
+                    >
+                      Google Ads
+                    </button>
 
                     {/* Divider */}
                     <div className="h-px bg-[#f6f6f6]" />
@@ -902,9 +1057,296 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                 backgroundSize: '20px 20px'
               }}
             >
-              <div className="h-full overflow-x-auto overflow-y-auto p-6 flex justify-center items-center">
-                <div className="mx-auto w-full max-w-[1200px]">
-                  <div className="flex gap-6" style={{ verticalAlign: 'middle' }}>
+              <div
+                className={`h-full overflow-x-auto overflow-y-auto flex justify-center ${
+                  contentViewType === "google-ads" ? "items-stretch pl-6 pr-0 pt-0 pb-0" : "items-center p-6"
+                }`}
+              >
+                <div className={`mx-auto w-full max-w-[1200px] ${contentViewType === "google-ads" ? "h-full" : ""}`}>
+                  <div className={`flex gap-6 ${contentViewType === "google-ads" ? "h-full items-stretch" : ""}`} style={{ verticalAlign: 'middle' }}>
+                  {contentViewType === "google-ads" ? (
+                    <motion.div
+                      key="google-ads-preview"
+                      className="mx-auto h-full w-full max-w-[1120px]"
+                      initial={{ x: 80, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ type: "spring", stiffness: 150, damping: 24 }}
+                    >
+                      <div className="flex h-full items-stretch gap-10">
+                        <div className="flex w-[60%] min-w-0 items-start gap-2 pt-8">
+                          <div className="flex-1 space-y-3">
+                            <div className="rounded-xl border border-[#eaeaea] bg-white p-4">
+                              <div className="mb-3">
+                                <h3 className="text-sm font-semibold text-[#303030]">Headlines</h3>
+                              </div>
+                              <div className="space-y-4">
+                                {GOOGLE_AD_HEADLINES.map((headline, index) => (
+                                  <div key={headline} className="flex items-center justify-between gap-4">
+                                    <p className="min-w-0 flex-1 text-sm text-[#303030]">{headline}</p>
+                                    <button
+                                      key={`google-headline-comment-${index}`}
+                                      type="button"
+                                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#f6f6f6] text-[#303030] hover:bg-[#eaeaea]"
+                                      aria-label={`Comment on headline ${index + 1}`}
+                                    >
+                                      <MessageSquare className="h-4 w-4" />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            <div className="rounded-xl border border-[#eaeaea] bg-white p-4">
+                              <div className="mb-3">
+                                <h3 className="text-sm font-semibold text-[#303030]">Long headline</h3>
+                              </div>
+                              <div className="flex items-center justify-between gap-4">
+                                <p className="min-w-0 flex-1 text-sm text-[#303030]">Supercharge your sales growth with innovative strategies</p>
+                                <button type="button" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#f6f6f6] text-[#303030] hover:bg-[#eaeaea]" aria-label="Comment on long headline">
+                                  <MessageSquare className="h-4 w-4" />
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="rounded-xl border border-[#eaeaea] bg-white p-4">
+                              <div className="mb-3">
+                                <h3 className="text-sm font-semibold text-[#303030]">Descriptions</h3>
+                              </div>
+                              <div className="space-y-4">
+                                {GOOGLE_AD_DESCRIPTIONS.map((description, index) => (
+                                  <div key={description} className="flex items-start justify-between gap-4">
+                                    <p className="min-w-0 flex-1 text-sm leading-[1.45] text-[#303030]">{description}</p>
+                                    <button
+                                      key={`google-description-comment-${index}`}
+                                      type="button"
+                                      className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#f6f6f6] text-[#303030] hover:bg-[#eaeaea]"
+                                      aria-label={`Comment on description ${index + 1}`}
+                                    >
+                                      <MessageSquare className="h-4 w-4" />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            <div className="rounded-xl border border-[#eaeaea] bg-white p-4">
+                              <div className="mb-3 flex items-center justify-between">
+                                <h3 className="text-sm font-semibold text-[#303030]">CTA</h3>
+                                <button type="button" className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#f6f6f6] text-[#303030] hover:bg-[#eaeaea]" aria-label="Comment on CTA">
+                                  <MessageSquare className="h-4 w-4" />
+                                </button>
+                              </div>
+                              <p className="text-sm text-[#303030]">Learn more</p>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col gap-1 rounded-lg border border-[#F6F6F6] bg-white p-1 shadow-[0px_4px_8px_0px_rgba(18,18,18,0.12)]">
+                            {[
+                              { icon: PenLine, label: "Edit Google Ads frame" },
+                              { icon: Sparkles, label: "Regenerate Google Ads frame" },
+                              { icon: Clock3, label: "View Google Ads history" },
+                              { icon: MoreVertical, label: "More Google Ads actions" },
+                            ].map(({ icon: Icon, label }) => (
+                              <button
+                                key={label}
+                                type="button"
+                                aria-label={label}
+                                onClick={
+                                  label === "Edit Google Ads frame"
+                                    ? () => {
+                                        setSelectedGoogleAdsSection("headlines")
+                                        setShowReferences(false)
+                                        setIsEditModeOpen(true)
+                                      }
+                                    : undefined
+                                }
+                                className="flex h-8 w-8 items-center justify-center rounded-[4px] text-[#303030] transition-colors hover:bg-[#F6F6F6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#303030] focus-visible:ring-offset-1"
+                              >
+                                <span className="flex h-4 w-4 items-center justify-center shrink-0">
+                                  <Icon className="h-4 w-4" aria-hidden="true" />
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div
+                          className="flex flex-1 min-w-[360px] flex-col items-center justify-start gap-6 border border-[#eaeaea] bg-white px-8 py-6"
+                          style={{
+                            marginRight: isContentViewPanelCollapsed
+                              ? "min(calc((1120px - 100vw) / 2), 0px)"
+                              : "min(calc((1440px - 100vw) / 2), 0px)"
+                          }}
+                        >
+                          <GoogleAdsPlacementSwitcher
+                            value={selectedGoogleAdsPlacement}
+                            onChange={setSelectedGoogleAdsPlacement}
+                            className="mb-6"
+                          />
+
+                          <div className="relative mx-auto w-[280px] rounded-[32px] border border-[#e5e5e5] bg-white p-4 shadow-sm">
+                            <div className="mb-4 flex items-center justify-between">
+                              <div className="space-y-1">
+                                <div className="h-1.5 w-3 rounded-full bg-[#8E8E8E]" />
+                                <div className="h-1 w-16 rounded-full bg-[#D9D9D9]" />
+                              </div>
+                              <SearchIcon className="h-4 w-4 text-[#8E8E8E]" />
+                            </div>
+                            <div className="space-y-2 mb-4">
+                              {Array.from({ length: 6 }).map((_, index) => (
+                                <div key={`google-ads-line-${index}`} className="h-1.5 rounded-full bg-[#E5E5E5]" />
+                              ))}
+                            </div>
+                            <div className="rounded-2xl border border-[#E5E5E5] p-3">
+                              <div className="mb-3 h-[92px] rounded-xl bg-gradient-to-r from-[#EAF2FF] to-[#DCEBFF] p-3 flex items-end">
+                                <div className="max-w-[150px]">
+                                  <p className="text-[10px] font-semibold uppercase tracking-wide text-[#1574D2]">Get the all-in-one CRM free for 30 days, then save 40%.</p>
+                                  <div className="mt-2 inline-flex rounded-md bg-[#1574D2] px-2 py-1 text-[9px] font-medium text-white">Try Starter free</div>
+                                </div>
+                              </div>
+                              <div className="flex items-start gap-2">
+                                <div className="mt-1 h-5 w-5 rounded-full bg-[#1A73E8]" />
+                                <div className="min-w-0">
+                                  <p className="text-xs font-semibold text-[#121212]">Accelerate sales growth</p>
+                                  <p className="mt-1 text-[11px] leading-[1.35] text-[#5E5E5E]">
+                                    Unlock rapid growth with analytics product! Our customers have seen a 30% increase in efficiency.
+                                  </p>
+                                  <button type="button" className="mt-3 rounded-md border border-[#AECBFA] px-3 py-1 text-[11px] font-medium text-[#1A73E8]">
+                                    Learn more
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="mt-4 space-y-2">
+                              {Array.from({ length: 4 }).map((_, index) => (
+                                <div key={`google-ads-bottom-line-${index}`} className="h-1.5 rounded-full bg-[#EAEAEA]" />
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="mt-8 flex items-center gap-2">
+                            <span className="h-2 w-2 rounded-full bg-[#121212]" />
+                            <span className="h-2 w-2 rounded-full bg-[#D9D9D9]" />
+                            <span className="h-2 w-2 rounded-full bg-[#D9D9D9]" />
+                            <span className="h-2 w-2 rounded-full bg-[#D9D9D9]" />
+                          </div>
+                          <p className="mt-8 max-w-[340px] text-center text-sm leading-[1.45] text-[#5E5E5E]">
+                            Google dynamically combines headlines and descriptions based on performance and placement.
+                          </p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ) : contentViewType === "landing-pages" ? (
+                    LANDING_PAGE_PREVIEW_ACCOUNTS.map((companyName, index) => (
+                      <motion.div
+                        key={`landing-page-${companyName}`}
+                        className="flex-shrink-0 pr-[60px]"
+                        initial={{ x: 200, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ type: "spring", stiffness: 150, damping: 24, delay: index * 0.08 }}
+                      >
+                        <div className="w-[640px]">
+                          <div className="mb-2 flex items-center justify-between">
+                            <h3 className="text-sm font-medium text-[#303030]">{companyName}</h3>
+                            <div className="flex items-center gap-2">
+                              <div className="w-4 h-4 flex items-center justify-center shrink-0">
+                                <MessageSquare className="w-4 h-4 text-[#303030]" />
+                              </div>
+                              <span className="text-sm font-medium text-[#303030]">3</span>
+                            </div>
+                          </div>
+                          <div className="relative w-[640px]">
+                            <div className="bg-white rounded-lg border border-[#eaeaea] p-6 shadow-sm hover:shadow-md transition-shadow w-[640px]">
+                              <div className="flex items-center justify-between mb-12">
+                                <div className="flex items-center gap-4">
+                                  <img src={FIGMA_LANDING_LOGO} alt="Adobe logo" className="w-8 h-8 object-cover" />
+                                  <p className="text-sm font-semibold text-black">Adobe</p>
+                                </div>
+                                <button className="h-6 px-3 bg-black text-white text-xs font-medium rounded-lg">
+                                  Request a demo
+                                </button>
+                              </div>
+
+                              <div className="flex gap-4 items-start mb-12">
+                                <div className="w-[288px] h-[260px] rounded-2xl overflow-hidden flex-shrink-0">
+                                  <img src={FIGMA_LANDING_HERO} alt="Creative Cloud hero" className="w-full h-full object-cover" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="text-[28px] leading-[1.2] font-semibold text-[#121212] mb-4">
+                                    Save over 40% on Creative Cloud Pro.
+                                  </h4>
+                                  <p className="text-xs leading-[1.4] text-[#303030] mb-3">
+                                    Get Photoshop, Illustrator, Premiere, Acrobat Pro, and more, plus Adobe Firefly
+                                    creative AI for images, video, and audio. New subscribers only. First year only.
+                                    <a href="https://www.adobe.com/in/offer-terms/cc_full_special_offer.html" className="underline ml-1">
+                                      See terms
+                                    </a>.
+                                  </p>
+                                  <p className="text-xs leading-[1.4] text-[#303030]">
+                                    Work smarter and faster with the industry-standard tools pros depend on.
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div>
+                                <div className="text-center mb-8">
+                                  <h5 className="text-[28px] leading-[1.2] font-semibold text-[#121212]">Why choose Creative Cloud.</h5>
+                                  <p className="mt-4 text-sm text-[#303030]">
+                                    Membership perks include tutorials, fonts, templates and more.
+                                  </p>
+                                </div>
+                                <div className="grid grid-cols-3 gap-x-6 gap-y-8">
+                                  {[
+                                    { icon: "🏅", title: "A complete creative ecosystem", body: "Find every app you need for photo, design, video and more." },
+                                    { icon: "🎁", title: "30,000+ professional fonts", body: "Find the perfect type for any project with Adobe Fonts." },
+                                    { icon: "💎", title: "A complete creative ecosystem", body: "Meet any deadline with Adobe Stock and free creative assets." },
+                                    { icon: "🎬", title: "30,000+ professional fonts", body: "Create standout video with templates and premium assets." },
+                                    { icon: "🚀", title: "A complete creative ecosystem", body: "Move from concept to production without switching tools." },
+                                    { icon: "🎮", title: "A complete creative ecosystem", body: "Build polished projects faster with production-ready content." },
+                                  ].map((item) => (
+                                    <div key={`${companyName}-${item.title}-${item.icon}`} className="text-center">
+                                      <div className="text-4xl mb-2">{item.icon}</div>
+                                      <p className="text-sm leading-[1.4] font-semibold text-[#303030] mb-2">{item.title}</p>
+                                      <p className="text-xs leading-[1.4] text-[#303030]">{item.body}</p>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="absolute top-0 right-[-60px] bg-white border border-[#f6f6f6] rounded-lg shadow-[0px_4px_8px_0px_rgba(18,18,18,0.12)] p-1 flex flex-col gap-1">
+                              {[
+                                { icon: PenLine, label: "Edit landing page" },
+                                { icon: Expand, label: "Expand landing page" },
+                                { icon: Sparkles, label: "Regenerate landing page" },
+                                { icon: Clock3, label: "View version history" },
+                                { icon: MoreVertical, label: "More actions" },
+                              ].map(({ icon: Icon, label }) => (
+                                <button
+                                  key={`${companyName}-${label}`}
+                                  type="button"
+                                  aria-label={label}
+                                  onClick={
+                                    label === "Edit landing page"
+                                      ? () => {
+                                          setEditModeCompanyName(companyName)
+                                          setIsEditModeOpen(true)
+                                        }
+                                      : undefined
+                                  }
+                                  className="w-10 h-10 rounded-[4px] flex items-center justify-center hover:bg-[#f6f6f6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#303030] focus-visible:ring-offset-1 transition-colors"
+                                >
+                                  <span className="w-4 h-4 flex items-center justify-center shrink-0">
+                                    <Icon className="w-4 h-4 text-[#303030]" aria-hidden="true" />
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))
+                  ) : (
+                    <>
                   {/* Apple Column */}
                   {!isEditModeOpen && (
                     <motion.div 
@@ -1541,6 +1983,8 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                       </div>
                     </div>
                   </motion.div>
+                    </>
+                  )}
                   </div>
                 </div>
               </div>
@@ -1737,40 +2181,64 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                   </button>
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 flex items-center justify-center shrink-0 rounded-[6px] bg-white">
-                      <Image
-                        src="/images/LinkedIn.svg"
-                        alt="LinkedIn"
-                        width={24}
-                        height={24}
-                        className="w-6 h-6 object-contain"
-                      />
+                      {contentViewType === "landing-pages" ? (
+                        <Image
+                          src="/images/Adobe.png"
+                          alt="Adobe"
+                          width={24}
+                          height={24}
+                          className="w-6 h-6 object-contain"
+                        />
+                      ) : contentViewType === "google-ads" ? (
+                        <Image
+                          src="/images/GoogleAds.svg"
+                          alt="Google Ads"
+                          width={24}
+                          height={24}
+                          className="w-6 h-6 object-contain"
+                        />
+                      ) : (
+                        <Image
+                          src="/images/LinkedIn.svg"
+                          alt="LinkedIn"
+                          width={24}
+                          height={24}
+                          className="w-6 h-6 object-contain"
+                        />
+                      )}
                     </div>
                     <span className="text-white text-lg font-semibold">
-                      Editing Linkedin ad for Apple
+                      {contentViewType === "landing-pages"
+                        ? `Editing Landing page for ${editModeCompanyName}`
+                        : contentViewType === "google-ads"
+                          ? "Editing Google ad"
+                          : "Editing Linkedin ad for Apple"}
                     </span>
                   </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button
-                        type="button"
-                        className="inline-flex items-center justify-center gap-1 rounded-md bg-white text-black hover:bg-white/90 h-7 px-4 text-sm font-medium border-0"
-                      >
-                        {editTopbarOption}
-                        <ChevronDown className="h-4 w-4" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="min-w-[8rem]">
-                      <DropdownMenuItem onClick={() => setEditTopbarOption("Edge-aligned Divider")}>
-                        Edge-aligned Divider
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setEditTopbarOption("Surface-based Separation")}>
-                        Surface-based Separation
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setEditTopbarOption("Framed Side Pane")}>
-                        Framed Side Pane
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  {contentViewType !== "google-ads" && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          type="button"
+                          className="inline-flex items-center justify-center gap-1 rounded-md bg-white text-black hover:bg-white/90 h-7 px-4 text-sm font-medium border-0"
+                        >
+                          {editTopbarOption}
+                          <ChevronDown className="h-4 w-4" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="min-w-[8rem]">
+                        <DropdownMenuItem onClick={() => setEditTopbarOption("Edge-aligned Divider")}>
+                          Edge-aligned Divider
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setEditTopbarOption("Surface-based Separation")}>
+                          Surface-based Separation
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setEditTopbarOption("Framed Side Pane")}>
+                          Framed Side Pane
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
                 </div>
                 
                 <div className="flex items-center gap-2">
@@ -1837,15 +2305,210 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                     ref={aiPanelRef}
                     mode="default"
                     className="h-full"
-                    selectedBlockId={isEditModeOpen ? selectedBlockId : null}
-                    isBlockThinking={!!blockThinkingId || !!blockStreamingId || !!blockFadeId}
-                    onApplyToBlock={isEditModeOpen ? handleApplyToBlock : undefined}
+                    selectedBlockId={isEditModeOpen && contentViewType !== "google-ads" ? selectedBlockId : null}
+                    isBlockThinking={contentViewType !== "google-ads" && (!!blockThinkingId || !!blockStreamingId || !!blockFadeId)}
+                    onApplyToBlock={isEditModeOpen && contentViewType !== "google-ads" ? handleApplyToBlock : undefined}
                     inputRef={chatInputRef}
                   />
                 </motion.div>
 
-                {/* EditorLayout: LeftChat | CanvasWrapper | ReferencePane (Framed Side Pane) OR single grey canvas (other modes) */}
-                {editTopbarOption === "Framed Side Pane" ? (
+                {contentViewType === "google-ads" ? (
+                  <div
+                    className="flex-1 overflow-y-auto bg-[#EAEAEA]"
+                    style={{
+                      backgroundImage: `
+                        linear-gradient(to right, rgba(0,0,0,0.02) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(0,0,0,0.02) 1px, transparent 1px)
+                      `,
+                      backgroundSize: "20px 20px",
+                    }}
+                  >
+                    <div className="mx-auto flex h-full w-full max-w-[1120px] items-start gap-10 pl-6 pr-0 py-0">
+                      <div className="min-w-0 flex-1 space-y-3 pt-8">
+                        <div className="rounded-xl border border-[#E5E5E5] bg-white p-4">
+                          <div className="mb-3">
+                            <h3 className="text-sm font-semibold text-[#303030]">Headlines</h3>
+                          </div>
+                          <div className="space-y-3">
+                            {GOOGLE_AD_HEADLINES.map((headline, index) => (
+                              <div
+                                key={`google-edit-headline-${headline}`}
+                                className="flex w-full items-start justify-between gap-0 rounded-lg border border-transparent text-left"
+                              >
+                                <div className="min-w-0 flex-1">
+                                  <EditableTextBlock
+                                    blockId="headline"
+                                    isSelectable={isEditModeOpen}
+                                    showBlockToolbar={isEditModeOpen}
+                                    isSelected={selectedGoogleAdsTextBlockId === `headline-${index}`}
+                                    isThinking={false}
+                                    isStreaming={false}
+                                    isFading={false}
+                                    onSelect={() => handleGoogleAdsTextBlockSelect("headlines", `headline-${index}`)}
+                                    className="min-w-0 text-sm text-[#303030]"
+                                  >
+                                    {headline}
+                                  </EditableTextBlock>
+                                </div>
+                                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#F6F6F6] text-[#303030]">
+                                  <MessageSquare className="h-4 w-4" aria-hidden="true" />
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="rounded-xl border border-[#E5E5E5] bg-white p-4">
+                          <div className="mb-3">
+                            <h3 className="text-sm font-semibold text-[#303030]">Long headline</h3>
+                          </div>
+                          <div className="flex w-full items-start justify-between gap-0 rounded-lg border border-transparent text-left">
+                            <div className="min-w-0 flex-1">
+                              <EditableTextBlock
+                                blockId="headline"
+                                isSelectable={isEditModeOpen}
+                                showBlockToolbar={isEditModeOpen}
+                                isSelected={selectedGoogleAdsTextBlockId === "long-headline"}
+                                isThinking={false}
+                                isStreaming={false}
+                                isFading={false}
+                                onSelect={() => handleGoogleAdsTextBlockSelect("long-headline", "long-headline")}
+                                className="text-sm leading-[1.45] text-[#303030]"
+                              >
+                                Supercharge your sales growth with innovative strategies
+                              </EditableTextBlock>
+                            </div>
+                            <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#F6F6F6] text-[#303030]">
+                              <MessageSquare className="h-4 w-4" aria-hidden="true" />
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="rounded-xl border border-[#E5E5E5] bg-white p-4">
+                          <div className="mb-3">
+                            <h3 className="text-sm font-semibold text-[#303030]">Descriptions</h3>
+                          </div>
+                          <div className="space-y-3">
+                            {GOOGLE_AD_DESCRIPTIONS.map((description, index) => (
+                              <div
+                                key={`google-edit-description-${index}`}
+                                className="flex w-full items-start justify-between gap-0 rounded-lg border border-transparent text-left"
+                              >
+                                <div className="min-w-0 flex-1">
+                                  <EditableTextBlock
+                                    blockId="body"
+                                    isSelectable={isEditModeOpen}
+                                    showBlockToolbar={isEditModeOpen}
+                                    isSelected={selectedGoogleAdsTextBlockId === `description-${index}`}
+                                    isThinking={false}
+                                    isStreaming={false}
+                                    isFading={false}
+                                    onSelect={() => handleGoogleAdsTextBlockSelect("descriptions", `description-${index}`)}
+                                    className="min-w-0 text-sm leading-[1.45] text-[#303030]"
+                                  >
+                                    {description}
+                                  </EditableTextBlock>
+                                </div>
+                                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#F6F6F6] text-[#303030]">
+                                  <MessageSquare className="h-4 w-4" aria-hidden="true" />
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="rounded-xl border border-[#E5E5E5] bg-white p-4">
+                          <div className="mb-3 flex items-center justify-between">
+                            <h3 className="text-sm font-semibold text-[#303030]">CTA</h3>
+                            <div className="rounded-lg border border-transparent bg-[#F6F6F6] px-3 py-1.5 text-sm text-[#303030]">
+                              <EditableTextBlock
+                                blockId="cta"
+                                isSelectable={isEditModeOpen}
+                                showBlockToolbar={isEditModeOpen}
+                                isSelected={selectedGoogleAdsTextBlockId === "cta"}
+                                isThinking={false}
+                                isStreaming={false}
+                                isFading={false}
+                                onSelect={() => handleGoogleAdsTextBlockSelect("cta", "cta")}
+                                className="inline-block text-sm text-[#303030]"
+                              >
+                                Learn more
+                              </EditableTextBlock>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="sticky top-6 flex h-full w-[360px] shrink-0 self-start flex-col justify-center rounded-none bg-[var(--tw-ring-offset-color)] px-8 py-6 text-left">
+                        <GoogleAdsPlacementSwitcher
+                          value={selectedGoogleAdsPlacement}
+                          onChange={setSelectedGoogleAdsPlacement}
+                          className="mb-6"
+                        />
+
+                        <div className="relative mx-auto w-[280px] rounded-[32px] border border-[#E5E5E5] bg-white p-4 shadow-sm">
+                          <div className="mb-4 flex items-center justify-between">
+                            <div className="space-y-1">
+                              <div className="h-1.5 w-3 rounded-full bg-[#8E8E8E]" />
+                              <div className="h-1 w-16 rounded-full bg-[#D9D9D9]" />
+                            </div>
+                            <SearchIcon className="h-4 w-4 text-[#8E8E8E]" aria-hidden="true" />
+                          </div>
+                          <div className="mb-4 space-y-2">
+                            {Array.from({ length: 6 }).map((_, index) => (
+                              <div key={`google-edit-top-line-${index}`} className="h-1.5 rounded-full bg-[#E5E5E5]" />
+                            ))}
+                          </div>
+                          <div className="rounded-2xl border border-[#E5E5E5] p-3">
+                            <div className="mb-3 h-[92px] rounded-xl bg-gradient-to-r from-[#EAF2FF] to-[#DCEBFF] p-3 flex items-end">
+                              <div className="max-w-[150px]">
+                                <p className="text-[10px] font-semibold uppercase tracking-wide text-[#1574D2]">
+                                  Get the all-in-one CRM free for 30 days, then save 40%.
+                                </p>
+                                <div className="mt-2 inline-flex rounded-md bg-[#1574D2] px-2 py-1 text-[9px] font-medium text-white">
+                                  Try Starter free
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-start gap-2">
+                              <div className="mt-1 h-5 w-5 rounded-full bg-[#1A73E8]" />
+                              <div className="min-w-0">
+                                <p className="text-xs font-semibold text-[#121212]">{GOOGLE_AD_HEADLINES[0]}</p>
+                                <p className="mt-1 text-[11px] leading-[1.35] text-[#5E5E5E]">
+                                  {GOOGLE_AD_DESCRIPTIONS[0]}
+                                </p>
+                                <button
+                                  type="button"
+                                  className="mt-3 rounded-md border border-[#AECBFA] px-3 py-1 text-[11px] font-medium text-[#1A73E8]"
+                                >
+                                  Learn more
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="mt-4 space-y-2">
+                            {Array.from({ length: 4 }).map((_, index) => (
+                              <div key={`google-edit-bottom-line-${index}`} className="h-1.5 rounded-full bg-[#EAEAEA]" />
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="mt-8 flex items-center justify-center gap-2">
+                          <span className="h-2 w-2 rounded-full bg-[#121212]" />
+                          <span className="h-2 w-2 rounded-full bg-[#D9D9D9]" />
+                          <span className="h-2 w-2 rounded-full bg-[#D9D9D9]" />
+                          <span className="h-2 w-2 rounded-full bg-[#D9D9D9]" />
+                        </div>
+                        <p className="mx-auto mt-8 max-w-[270px] text-center text-sm leading-[1.45] text-[#6A6A6A]">
+                          Google dynamically combines headlines and descriptions based on performance and placement.
+                        </p>
+
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                /* EditorLayout: LeftChat | CanvasWrapper | ReferencePane (Framed Side Pane) OR single grey canvas (other modes) */
+                editTopbarOption === "Framed Side Pane" ? (
                   <div className="flex-1 flex min-w-0 overflow-visible">
                   {/* CanvasWrapper: owns canvas space; Apple frame centers in available width */}
                   <div
@@ -1860,6 +2523,111 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                   >
                     <div className="flex-1 flex items-center justify-center min-h-0 px-6">
                       {/* AppleFrame: centered in canvas; reflows when ReferencePane opens */}
+                      {contentViewType === "landing-pages" ? (
+                      <motion.div
+                        layout
+                        layoutId="apple-frame"
+                        className="flex-shrink-0 w-[640px] py-6"
+                        transition={{ type: "spring", stiffness: 80, damping: 20 }}
+                        style={{ transformOrigin: "center center" }}
+                      >
+                        <div className="flex items-center justify-between mb-2 w-full gap-3">
+                          <span className="text-xs font-medium text-[#5E5E5E] shrink-0">{editModeCompanyName}</span>
+                          <div className="flex items-center gap-1.5 shrink-0 text-[#5E5E5E]">
+                            <span className="w-4 h-4 flex items-center justify-center shrink-0">
+                              <Image src="/images/message-square.svg" alt="" width={16} height={16} className="w-4 h-4 object-contain" />
+                            </span>
+                            <span className="text-xs font-medium">3</span>
+                          </div>
+                        </div>
+                        <div className="bg-white rounded-lg border border-[#eaeaea] p-6 shadow-sm hover:shadow-md transition-shadow w-[640px]">
+                          <div className="flex items-center justify-between mb-12">
+                            <div className="flex items-center gap-4">
+                              <img src={FIGMA_LANDING_LOGO} alt="Adobe logo" className="w-8 h-8 object-cover" />
+                              <p className="text-sm font-semibold text-black">Adobe</p>
+                            </div>
+                            <button className="h-6 px-3 bg-black text-white text-xs font-medium rounded-lg">
+                              Request a demo
+                            </button>
+                          </div>
+                          <div className="flex gap-4 items-start mb-12">
+                            <div className="w-[288px] h-[260px] rounded-2xl overflow-hidden flex-shrink-0">
+                              <img src={FIGMA_LANDING_HERO} alt="Creative Cloud hero" className="w-full h-full object-cover" />
+                            </div>
+                            <div className="flex-1 min-w-0 space-y-3">
+                              <EditableTextBlock
+                                blockId="headline"
+                                showBlockToolbar={isEditModeOpen}
+                                isSelected={selectedBlockId === "headline"}
+                                isThinking={blockThinkingId === "headline"}
+                                isStreaming={blockStreamingId === "headline"}
+                                isFading={blockFadeId === "headline"}
+                                streamingText={streamingTarget?.blockId === "headline" ? streamingTarget.text : undefined}
+                                onStreamingComplete={() => handleStreamingComplete("headline")}
+                                onSelect={() => handleBlockSelect("headline")}
+                                className="text-[28px] leading-[1.2] font-semibold text-[#121212]"
+                              >
+                                Save over 40% on Creative Cloud Pro.
+                              </EditableTextBlock>
+                              <EditableTextBlock
+                                blockId="body"
+                                showBlockToolbar={isEditModeOpen}
+                                isSelected={selectedBlockId === "body"}
+                                isThinking={blockThinkingId === "body"}
+                                isStreaming={blockStreamingId === "body"}
+                                isFading={blockFadeId === "body"}
+                                streamingText={streamingTarget?.blockId === "body" ? streamingTarget.text : undefined}
+                                onStreamingComplete={() => handleStreamingComplete("body")}
+                                onSelect={() => handleBlockSelect("body")}
+                                className="text-xs leading-[1.4] text-[#303030]"
+                              >
+                                Get Photoshop, Illustrator, Premiere, Acrobat Pro, and more, plus Adobe Firefly creative AI for images, video, and audio. New subscribers only. First year only. See terms.
+                              </EditableTextBlock>
+                              <p className="text-xs leading-[1.4] text-[#303030]">
+                                Work smarter and faster with the industry-standard tools pros depend on.
+                              </p>
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-center mb-8">
+                              <EditableTextBlock
+                                blockId="cta"
+                                showBlockToolbar={isEditModeOpen}
+                                isSelected={selectedBlockId === "cta"}
+                                isThinking={blockThinkingId === "cta"}
+                                isStreaming={blockStreamingId === "cta"}
+                                isFading={blockFadeId === "cta"}
+                                streamingText={streamingTarget?.blockId === "cta" ? streamingTarget.text : undefined}
+                                onStreamingComplete={() => handleStreamingComplete("cta")}
+                                onSelect={() => handleBlockSelect("cta")}
+                                className="text-[28px] leading-[1.2] font-semibold text-[#121212] inline-block"
+                              >
+                                Why choose Creative Cloud.
+                              </EditableTextBlock>
+                              <p className="mt-4 text-sm text-[#303030]">
+                                Membership perks include tutorials, fonts, templates and more.
+                              </p>
+                            </div>
+                            <div className="grid grid-cols-3 gap-x-6 gap-y-8">
+                              {[
+                                { icon: "🏅", title: "A complete creative ecosystem", body: "Find every app you need for photo, design, video and more." },
+                                { icon: "🎁", title: "30,000+ professional fonts", body: "Find the perfect type for any project with Adobe Fonts." },
+                                { icon: "💎", title: "A complete creative ecosystem", body: "Meet any deadline with Adobe Stock and free creative assets." },
+                                { icon: "🎬", title: "30,000+ professional fonts", body: "Create standout video with templates and premium assets." },
+                                { icon: "🚀", title: "A complete creative ecosystem", body: "Move from concept to production without switching tools." },
+                                { icon: "🎮", title: "A complete creative ecosystem", body: "Build polished projects faster with production-ready content." },
+                              ].map((item) => (
+                                <div key={`${editModeCompanyName}-${item.title}-${item.icon}`} className="text-center">
+                                  <div className="text-4xl mb-2">{item.icon}</div>
+                                  <p className="text-sm leading-[1.4] font-semibold text-[#303030] mb-2">{item.title}</p>
+                                  <p className="text-xs leading-[1.4] text-[#303030]">{item.body}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                      ) : (
                       <motion.div
                         layout
                         layoutId="apple-frame"
@@ -1900,6 +2668,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                             <div className="space-y-2">
                               <EditableTextBlock
                                 blockId="headline"
+                                showBlockToolbar={isEditModeOpen}
                                 isSelected={selectedBlockId === "headline"}
                                 isThinking={blockThinkingId === "headline"}
                                 isStreaming={blockStreamingId === "headline"}
@@ -1913,6 +2682,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                               </EditableTextBlock>
                               <EditableTextBlock
                                 blockId="body"
+                                showBlockToolbar={isEditModeOpen}
                                 isSelected={selectedBlockId === "body"}
                                 isThinking={blockThinkingId === "body"}
                                 isStreaming={blockStreamingId === "body"}
@@ -1926,6 +2696,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                               </EditableTextBlock>
                               <EditableTextBlock
                                 blockId="cta"
+                                showBlockToolbar={isEditModeOpen}
                                 isSelected={selectedBlockId === "cta"}
                                 isThinking={blockThinkingId === "cta"}
                                 isStreaming={blockStreamingId === "cta"}
@@ -1966,6 +2737,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                           </div>
                         </div>
                       </motion.div>
+                      )}
                     </div>
                   </div>
                   {/* ReferencePane: part of flex layout; width 40px (strip) → 60%; toggle reflows canvas */}
@@ -1987,6 +2759,112 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                         <div className="flex-1 min-h-0 overflow-y-auto overflow-x-auto p-4 flex items-center">
                           <div className="flex flex-row flex-nowrap gap-6 pb-4 pt-2">
                             {orderedSelectedAccounts.map((companyName) => (
+                              contentViewType === "landing-pages" ? (
+                              <div key={companyName} className="flex-shrink-0 w-[640px] pt-6">
+                                <div className="flex items-center justify-between mb-2 w-full gap-3">
+                                  <span className="text-xs font-medium text-[#5E5E5E] shrink-0">{companyName}</span>
+                                </div>
+                                <div className="bg-white rounded-lg border border-[#eaeaea] shadow-sm h-[834px] w-full overflow-y-auto overflow-x-hidden p-6">
+                                  {!loadedReferenceFrames.has(companyName) ? (
+                                    <div className="flex flex-col gap-12 h-full" aria-hidden>
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-4">
+                                          <div className="skeleton-shimmer w-8 h-8 rounded" />
+                                          <div className="skeleton-shimmer h-4 rounded w-16" />
+                                        </div>
+                                        <div className="skeleton-shimmer h-6 rounded-lg w-28" />
+                                      </div>
+                                      <div className="flex gap-4 items-start">
+                                        <div className="skeleton-shimmer w-[288px] h-[260px] rounded-2xl shrink-0" />
+                                        <div className="flex-1 flex flex-col gap-3 pt-1">
+                                          <div className="skeleton-shimmer h-8 rounded w-full" />
+                                          <div className="skeleton-shimmer h-8 rounded w-[84%]" />
+                                          <div className="skeleton-shimmer h-3.5 rounded w-full" />
+                                          <div className="skeleton-shimmer h-3.5 rounded w-[92%]" />
+                                          <div className="skeleton-shimmer h-3.5 rounded w-[74%]" />
+                                          <div className="skeleton-shimmer h-3.5 rounded w-[86%] mt-2" />
+                                        </div>
+                                      </div>
+                                      <div className="flex flex-col gap-8">
+                                        <div className="flex flex-col items-center gap-4">
+                                          <div className="skeleton-shimmer h-8 rounded w-56" />
+                                          <div className="skeleton-shimmer h-8 rounded w-44" />
+                                          <div className="skeleton-shimmer h-4 rounded w-80" />
+                                        </div>
+                                        <div className="grid grid-cols-3 gap-x-6 gap-y-8">
+                                          {Array.from({ length: 6 }).map((_, itemIndex) => (
+                                            <div key={`${companyName}-landing-ref-skeleton-framed-${itemIndex}`} className="flex flex-col items-center gap-3">
+                                              <div className="skeleton-shimmer w-12 h-12 rounded-full" />
+                                              <div className="skeleton-shimmer h-4 rounded w-32" />
+                                              <div className="skeleton-shimmer h-4 rounded w-28" />
+                                              <div className="skeleton-shimmer h-3 rounded w-full" />
+                                              <div className="skeleton-shimmer h-3 rounded w-[88%]" />
+                                              <div className="skeleton-shimmer h-3 rounded w-[70%]" />
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <>
+                                      <div className="flex items-center justify-between mb-12">
+                                        <div className="flex items-center gap-4">
+                                          <img src={FIGMA_LANDING_LOGO} alt="Adobe logo" className="w-8 h-8 object-cover" />
+                                          <p className="text-sm font-semibold text-black">Adobe</p>
+                                        </div>
+                                        <button className="h-6 px-3 bg-black text-white text-xs font-medium rounded-lg">
+                                          Request a demo
+                                        </button>
+                                      </div>
+                                      <div className="flex gap-4 items-start mb-12">
+                                        <div className="w-[288px] h-[260px] rounded-2xl overflow-hidden flex-shrink-0">
+                                          <img src={FIGMA_LANDING_HERO} alt="Creative Cloud hero" className="w-full h-full object-cover" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <h4 className="text-[28px] leading-[1.2] font-semibold text-[#121212] mb-4">
+                                            Save over 40% on Creative Cloud Pro.
+                                          </h4>
+                                          <p className="text-xs leading-[1.4] text-[#303030] mb-3">
+                                            Get Photoshop, Illustrator, Premiere, Acrobat Pro, and more, plus Adobe Firefly
+                                            creative AI for images, video, and audio. New subscribers only. First year only.
+                                            <a href="https://www.adobe.com/in/offer-terms/cc_full_special_offer.html" className="underline ml-1">
+                                              See terms
+                                            </a>.
+                                          </p>
+                                          <p className="text-xs leading-[1.4] text-[#303030]">
+                                            Work smarter and faster with the industry-standard tools pros depend on.
+                                          </p>
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <div className="text-center mb-8">
+                                          <h5 className="text-[28px] leading-[1.2] font-semibold text-[#121212]">Why choose Creative Cloud.</h5>
+                                          <p className="mt-4 text-sm text-[#303030]">
+                                            Membership perks include tutorials, fonts, templates and more.
+                                          </p>
+                                        </div>
+                                        <div className="grid grid-cols-3 gap-x-6 gap-y-8">
+                                          {[
+                                            { icon: "🏅", title: "A complete creative ecosystem", body: "Find every app you need for photo, design, video and more." },
+                                            { icon: "🎁", title: "30,000+ professional fonts", body: "Find the perfect type for any project with Adobe Fonts." },
+                                            { icon: "💎", title: "A complete creative ecosystem", body: "Meet any deadline with Adobe Stock and free creative assets." },
+                                            { icon: "🎬", title: "30,000+ professional fonts", body: "Create standout video with templates and premium assets." },
+                                            { icon: "🚀", title: "A complete creative ecosystem", body: "Move from concept to production without switching tools." },
+                                            { icon: "🎮", title: "A complete creative ecosystem", body: "Build polished projects faster with production-ready content." },
+                                          ].map((item) => (
+                                            <div key={`${companyName}-framed-ref-${item.title}-${item.icon}`} className="text-center">
+                                              <div className="text-4xl mb-2">{item.icon}</div>
+                                              <p className="text-sm leading-[1.4] font-semibold text-[#303030] mb-2">{item.title}</p>
+                                              <p className="text-xs leading-[1.4] text-[#303030]">{item.body}</p>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                              ) : (
                               <div key={companyName} className="flex-shrink-0 w-[400px]">
                                 <div className="flex items-center justify-between mb-2 w-full gap-3">
                                   <span className="text-xs font-medium text-[#5E5E5E] shrink-0">{companyName}</span>
@@ -2056,39 +2934,45 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                     <div className="space-y-2">
                                       <EditableTextBlock
                                         blockId="headline"
-                                        isSelected={selectedBlockId === "headline"}
+                                        isSelectable={false}
+                                        showBlockToolbar={isEditModeOpen}
+                                        isSelected={false}
                                         isThinking={blockThinkingId === "headline"}
                                         isStreaming={blockStreamingId === "headline"}
                                         isFading={blockFadeId === "headline"}
                                         streamingText={streamingTarget?.blockId === "headline" ? streamingTarget.text : undefined}
                                         onStreamingComplete={() => handleStreamingComplete("headline")}
-                                        onSelect={() => handleBlockSelect("headline")}
+                                        onSelect={() => {}}
                                         className="text-sm text-[#121212] font-medium"
                                       >
                                         {editBlockContent.headline}
                                       </EditableTextBlock>
                                       <EditableTextBlock
                                         blockId="body"
-                                        isSelected={selectedBlockId === "body"}
+                                        isSelectable={false}
+                                        showBlockToolbar={isEditModeOpen}
+                                        isSelected={false}
                                         isThinking={blockThinkingId === "body"}
                                         isStreaming={blockStreamingId === "body"}
                                         isFading={blockFadeId === "body"}
                                         streamingText={streamingTarget?.blockId === "body" ? streamingTarget.text : undefined}
                                         onStreamingComplete={() => handleStreamingComplete("body")}
-                                        onSelect={() => handleBlockSelect("body")}
+                                        onSelect={() => {}}
                                         className="text-sm text-[#121212]"
                                       >
                                         {editBlockContent.body}
                                       </EditableTextBlock>
                                       <EditableTextBlock
                                         blockId="cta"
-                                        isSelected={selectedBlockId === "cta"}
+                                        isSelectable={false}
+                                        showBlockToolbar={isEditModeOpen}
+                                        isSelected={false}
                                         isThinking={blockThinkingId === "cta"}
                                         isStreaming={blockStreamingId === "cta"}
                                         isFading={blockFadeId === "cta"}
                                         streamingText={streamingTarget?.blockId === "cta" ? streamingTarget.text : undefined}
                                         onStreamingComplete={() => handleStreamingComplete("cta")}
-                                        onSelect={() => handleBlockSelect("cta")}
+                                        onSelect={() => {}}
                                         className="text-sm text-[#0077b5] font-medium"
                                       >
                                         {editBlockContent.cta}
@@ -2135,6 +3019,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                   )}
                                 </div>
                               </div>
+                              )
                             ))}
                           </div>
                         </div>
@@ -2188,6 +3073,111 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                         className="flex-shrink-0 flex flex-col items-center justify-center h-full"
                         style={{ overflow: "visible", minWidth: showReferences ? 400 : undefined }}
                       >
+                      {contentViewType === "landing-pages" ? (
+                      <motion.div
+                        layout
+                        layoutId="apple-frame"
+                        className="flex-shrink-0 w-[640px] py-6"
+                        transition={{ type: "spring", stiffness: 80, damping: 20 }}
+                        style={{ transformOrigin: "center center" }}
+                      >
+                        <div className="flex items-center justify-between mb-2 w-full gap-3">
+                          <span className="text-xs font-medium text-[#5E5E5E] shrink-0">{editModeCompanyName}</span>
+                          <div className="flex items-center gap-1.5 shrink-0 text-[#5E5E5E]">
+                            <span className="w-4 h-4 flex items-center justify-center shrink-0">
+                              <Image src="/images/message-square.svg" alt="" width={16} height={16} className="w-4 h-4 object-contain" />
+                            </span>
+                            <span className="text-xs font-medium">3</span>
+                          </div>
+                        </div>
+                        <div className="bg-white rounded-lg border border-[#eaeaea] p-6 shadow-sm hover:shadow-md transition-shadow w-[640px]">
+                          <div className="flex items-center justify-between mb-12">
+                            <div className="flex items-center gap-4">
+                              <img src={FIGMA_LANDING_LOGO} alt="Adobe logo" className="w-8 h-8 object-cover" />
+                              <p className="text-sm font-semibold text-black">Adobe</p>
+                            </div>
+                            <button className="h-6 px-3 bg-black text-white text-xs font-medium rounded-lg">
+                              Request a demo
+                            </button>
+                          </div>
+                          <div className="flex gap-4 items-start mb-12">
+                            <div className="w-[288px] h-[260px] rounded-2xl overflow-hidden flex-shrink-0">
+                              <img src={FIGMA_LANDING_HERO} alt="Creative Cloud hero" className="w-full h-full object-cover" />
+                            </div>
+                            <div className="flex-1 min-w-0 space-y-3">
+                              <EditableTextBlock
+                                blockId="headline"
+                                showBlockToolbar={isEditModeOpen}
+                                isSelected={selectedBlockId === "headline"}
+                                isThinking={blockThinkingId === "headline"}
+                                isStreaming={blockStreamingId === "headline"}
+                                isFading={blockFadeId === "headline"}
+                                streamingText={streamingTarget?.blockId === "headline" ? streamingTarget.text : undefined}
+                                onStreamingComplete={() => handleStreamingComplete("headline")}
+                                onSelect={() => handleBlockSelect("headline")}
+                                className="text-[28px] leading-[1.2] font-semibold text-[#121212]"
+                              >
+                                Save over 40% on Creative Cloud Pro.
+                              </EditableTextBlock>
+                              <EditableTextBlock
+                                blockId="body"
+                                showBlockToolbar={isEditModeOpen}
+                                isSelected={selectedBlockId === "body"}
+                                isThinking={blockThinkingId === "body"}
+                                isStreaming={blockStreamingId === "body"}
+                                isFading={blockFadeId === "body"}
+                                streamingText={streamingTarget?.blockId === "body" ? streamingTarget.text : undefined}
+                                onStreamingComplete={() => handleStreamingComplete("body")}
+                                onSelect={() => handleBlockSelect("body")}
+                                className="text-xs leading-[1.4] text-[#303030]"
+                              >
+                                Get Photoshop, Illustrator, Premiere, Acrobat Pro, and more, plus Adobe Firefly creative AI for images, video, and audio. New subscribers only. First year only. See terms.
+                              </EditableTextBlock>
+                              <p className="text-xs leading-[1.4] text-[#303030]">
+                                Work smarter and faster with the industry-standard tools pros depend on.
+                              </p>
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-center mb-8">
+                              <EditableTextBlock
+                                blockId="cta"
+                                showBlockToolbar={isEditModeOpen}
+                                isSelected={selectedBlockId === "cta"}
+                                isThinking={blockThinkingId === "cta"}
+                                isStreaming={blockStreamingId === "cta"}
+                                isFading={blockFadeId === "cta"}
+                                streamingText={streamingTarget?.blockId === "cta" ? streamingTarget.text : undefined}
+                                onStreamingComplete={() => handleStreamingComplete("cta")}
+                                onSelect={() => handleBlockSelect("cta")}
+                                className="text-[28px] leading-[1.2] font-semibold text-[#121212] inline-block"
+                              >
+                                Why choose Creative Cloud.
+                              </EditableTextBlock>
+                              <p className="mt-4 text-sm text-[#303030]">
+                                Membership perks include tutorials, fonts, templates and more.
+                              </p>
+                            </div>
+                            <div className="grid grid-cols-3 gap-x-6 gap-y-8">
+                              {[
+                                { icon: "🏅", title: "A complete creative ecosystem", body: "Find every app you need for photo, design, video and more." },
+                                { icon: "🎁", title: "30,000+ professional fonts", body: "Find the perfect type for any project with Adobe Fonts." },
+                                { icon: "💎", title: "A complete creative ecosystem", body: "Meet any deadline with Adobe Stock and free creative assets." },
+                                { icon: "🎬", title: "30,000+ professional fonts", body: "Create standout video with templates and premium assets." },
+                                { icon: "🚀", title: "A complete creative ecosystem", body: "Move from concept to production without switching tools." },
+                                { icon: "🎮", title: "A complete creative ecosystem", body: "Build polished projects faster with production-ready content." },
+                              ].map((item) => (
+                                <div key={`${editModeCompanyName}-inline-${item.title}-${item.icon}`} className="text-center">
+                                  <div className="text-4xl mb-2">{item.icon}</div>
+                                  <p className="text-sm leading-[1.4] font-semibold text-[#303030] mb-2">{item.title}</p>
+                                  <p className="text-xs leading-[1.4] text-[#303030]">{item.body}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                      ) : (
                       <motion.div
                         layout
                         layoutId="apple-frame"
@@ -2242,6 +3232,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                           <div className="space-y-2">
                             <EditableTextBlock
                               blockId="headline"
+                              showBlockToolbar={isEditModeOpen}
                               isSelected={selectedBlockId === "headline"}
                               isThinking={blockThinkingId === "headline"}
                               isStreaming={blockStreamingId === "headline"}
@@ -2255,6 +3246,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                             </EditableTextBlock>
                             <EditableTextBlock
                               blockId="body"
+                              showBlockToolbar={isEditModeOpen}
                               isSelected={selectedBlockId === "body"}
                               isThinking={blockThinkingId === "body"}
                               isStreaming={blockStreamingId === "body"}
@@ -2268,6 +3260,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                             </EditableTextBlock>
                             <EditableTextBlock
                               blockId="cta"
+                              showBlockToolbar={isEditModeOpen}
                               isSelected={selectedBlockId === "cta"}
                               isThinking={blockThinkingId === "cta"}
                               isStreaming={blockStreamingId === "cta"}
@@ -2320,6 +3313,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                           </div>
                         </div>
                       </motion.div>
+                      )}
                       </motion.div>
                       <motion.div
                         initial={false}
@@ -2480,6 +3474,112 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                         <div className="flex flex-row flex-nowrap gap-6 pb-4 justify-center items-start" style={{ width: 'max-content' }}>
                           {/* Reference Cards */}
                           {orderedSelectedAccounts.map((companyName) => (
+                              contentViewType === "landing-pages" ? (
+                              <div key={companyName} className="flex-shrink-0 w-[640px] pt-12">
+                                <div className="flex items-center justify-between mb-2 w-full gap-3">
+                                  <span className="text-xs font-medium text-[#5E5E5E] shrink-0">{companyName}</span>
+                                </div>
+                                <div className="bg-white rounded-lg border border-[#eaeaea] shadow-sm h-[834px] w-full overflow-y-auto overflow-x-hidden p-6">
+                                  {!loadedReferenceFrames.has(companyName) ? (
+                                    <div className="flex flex-col gap-12 h-full" aria-hidden>
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-4">
+                                          <div className="skeleton-shimmer w-8 h-8 rounded" />
+                                          <div className="skeleton-shimmer h-4 rounded w-16" />
+                                        </div>
+                                        <div className="skeleton-shimmer h-6 rounded-lg w-28" />
+                                      </div>
+                                      <div className="flex gap-4 items-start">
+                                        <div className="skeleton-shimmer w-[288px] h-[260px] rounded-2xl shrink-0" />
+                                        <div className="flex-1 flex flex-col gap-3 pt-1">
+                                          <div className="skeleton-shimmer h-8 rounded w-full" />
+                                          <div className="skeleton-shimmer h-8 rounded w-[84%]" />
+                                          <div className="skeleton-shimmer h-3.5 rounded w-full" />
+                                          <div className="skeleton-shimmer h-3.5 rounded w-[92%]" />
+                                          <div className="skeleton-shimmer h-3.5 rounded w-[74%]" />
+                                          <div className="skeleton-shimmer h-3.5 rounded w-[86%] mt-2" />
+                                        </div>
+                                      </div>
+                                      <div className="flex flex-col gap-8">
+                                        <div className="flex flex-col items-center gap-4">
+                                          <div className="skeleton-shimmer h-8 rounded w-56" />
+                                          <div className="skeleton-shimmer h-8 rounded w-44" />
+                                          <div className="skeleton-shimmer h-4 rounded w-80" />
+                                        </div>
+                                        <div className="grid grid-cols-3 gap-x-6 gap-y-8">
+                                          {Array.from({ length: 6 }).map((_, itemIndex) => (
+                                            <div key={`${companyName}-landing-ref-skeleton-inline-${itemIndex}`} className="flex flex-col items-center gap-3">
+                                              <div className="skeleton-shimmer w-12 h-12 rounded-full" />
+                                              <div className="skeleton-shimmer h-4 rounded w-32" />
+                                              <div className="skeleton-shimmer h-4 rounded w-28" />
+                                              <div className="skeleton-shimmer h-3 rounded w-full" />
+                                              <div className="skeleton-shimmer h-3 rounded w-[88%]" />
+                                              <div className="skeleton-shimmer h-3 rounded w-[70%]" />
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <>
+                                      <div className="flex items-center justify-between mb-12">
+                                        <div className="flex items-center gap-4">
+                                          <img src={FIGMA_LANDING_LOGO} alt="Adobe logo" className="w-8 h-8 object-cover" />
+                                          <p className="text-sm font-semibold text-black">Adobe</p>
+                                        </div>
+                                        <button className="h-6 px-3 bg-black text-white text-xs font-medium rounded-lg">
+                                          Request a demo
+                                        </button>
+                                      </div>
+                                      <div className="flex gap-4 items-start mb-12">
+                                        <div className="w-[288px] h-[260px] rounded-2xl overflow-hidden flex-shrink-0">
+                                          <img src={FIGMA_LANDING_HERO} alt="Creative Cloud hero" className="w-full h-full object-cover" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <h4 className="text-[28px] leading-[1.2] font-semibold text-[#121212] mb-4">
+                                            Save over 40% on Creative Cloud Pro.
+                                          </h4>
+                                          <p className="text-xs leading-[1.4] text-[#303030] mb-3">
+                                            Get Photoshop, Illustrator, Premiere, Acrobat Pro, and more, plus Adobe Firefly
+                                            creative AI for images, video, and audio. New subscribers only. First year only.
+                                            <a href="https://www.adobe.com/in/offer-terms/cc_full_special_offer.html" className="underline ml-1">
+                                              See terms
+                                            </a>.
+                                          </p>
+                                          <p className="text-xs leading-[1.4] text-[#303030]">
+                                            Work smarter and faster with the industry-standard tools pros depend on.
+                                          </p>
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <div className="text-center mb-8">
+                                          <h5 className="text-[28px] leading-[1.2] font-semibold text-[#121212]">Why choose Creative Cloud.</h5>
+                                          <p className="mt-4 text-sm text-[#303030]">
+                                            Membership perks include tutorials, fonts, templates and more.
+                                          </p>
+                                        </div>
+                                        <div className="grid grid-cols-3 gap-x-6 gap-y-8">
+                                          {[
+                                            { icon: "🏅", title: "A complete creative ecosystem", body: "Find every app you need for photo, design, video and more." },
+                                            { icon: "🎁", title: "30,000+ professional fonts", body: "Find the perfect type for any project with Adobe Fonts." },
+                                            { icon: "💎", title: "A complete creative ecosystem", body: "Meet any deadline with Adobe Stock and free creative assets." },
+                                            { icon: "🎬", title: "30,000+ professional fonts", body: "Create standout video with templates and premium assets." },
+                                            { icon: "🚀", title: "A complete creative ecosystem", body: "Move from concept to production without switching tools." },
+                                            { icon: "🎮", title: "A complete creative ecosystem", body: "Build polished projects faster with production-ready content." },
+                                          ].map((item) => (
+                                            <div key={`${companyName}-inline-ref-${item.title}-${item.icon}`} className="text-center">
+                                              <div className="text-4xl mb-2">{item.icon}</div>
+                                              <p className="text-sm leading-[1.4] font-semibold text-[#303030] mb-2">{item.title}</p>
+                                              <p className="text-xs leading-[1.4] text-[#303030]">{item.body}</p>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                              ) : (
                               <div key={companyName} className="flex-shrink-0 w-[400px]">
                                 <div className="flex items-center justify-between mb-2 w-full gap-3">
                                   <span className="text-xs font-medium text-[#5E5E5E] shrink-0">{companyName}</span>
@@ -2550,39 +3650,45 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                     <div className="space-y-2">
                                       <EditableTextBlock
                                         blockId="headline"
-                                        isSelected={selectedBlockId === "headline"}
+                                        isSelectable={false}
+                                        showBlockToolbar={isEditModeOpen}
+                                        isSelected={false}
                                         isThinking={blockThinkingId === "headline"}
                                         isStreaming={blockStreamingId === "headline"}
                                         isFading={blockFadeId === "headline"}
                                         streamingText={streamingTarget?.blockId === "headline" ? streamingTarget.text : undefined}
                                         onStreamingComplete={() => handleStreamingComplete("headline")}
-                                        onSelect={() => handleBlockSelect("headline")}
+                                        onSelect={() => {}}
                                         className="text-sm text-[#121212] font-medium"
                                       >
                                         {editBlockContent.headline}
                                       </EditableTextBlock>
                                       <EditableTextBlock
                                         blockId="body"
-                                        isSelected={selectedBlockId === "body"}
+                                        isSelectable={false}
+                                        showBlockToolbar={isEditModeOpen}
+                                        isSelected={false}
                                         isThinking={blockThinkingId === "body"}
                                         isStreaming={blockStreamingId === "body"}
                                         isFading={blockFadeId === "body"}
                                         streamingText={streamingTarget?.blockId === "body" ? streamingTarget.text : undefined}
                                         onStreamingComplete={() => handleStreamingComplete("body")}
-                                        onSelect={() => handleBlockSelect("body")}
+                                        onSelect={() => {}}
                                         className="text-sm text-[#121212]"
                                       >
                                         {editBlockContent.body}
                                       </EditableTextBlock>
                                       <EditableTextBlock
                                         blockId="cta"
-                                        isSelected={selectedBlockId === "cta"}
+                                        isSelectable={false}
+                                        showBlockToolbar={isEditModeOpen}
+                                        isSelected={false}
                                         isThinking={blockThinkingId === "cta"}
                                         isStreaming={blockStreamingId === "cta"}
                                         isFading={blockFadeId === "cta"}
                                         streamingText={streamingTarget?.blockId === "cta" ? streamingTarget.text : undefined}
                                         onStreamingComplete={() => handleStreamingComplete("cta")}
-                                        onSelect={() => handleBlockSelect("cta")}
+                                        onSelect={() => {}}
                                         className="text-sm text-[#0077b5] font-medium"
                                       >
                                         {editBlockContent.cta}
@@ -2631,6 +3737,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                   )}
                                 </div>
                               </div>
+                              )
                             ))}
                         </div>
                         </div>
@@ -2639,7 +3746,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                     </div>
                   </div>
                 </div>
-                )}
+                ))}
 
                 {/* Floating Chat button: rendered last with high z-index so it stays on top; click opens chat and closes reference pane */}
                 {isChatCollapsed && (
