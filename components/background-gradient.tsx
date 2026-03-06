@@ -1165,14 +1165,20 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                               </div>
                             </div>
 
-                            <div className="rounded-xl border border-[#eaeaea] bg-white p-4">
-                              <div className="mb-3 flex items-center justify-between">
-                                <h3 className="text-sm font-semibold text-[#303030]">CTA</h3>
-                                <button type="button" className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#f6f6f6] text-[#303030] hover:bg-[#eaeaea]" aria-label="Comment on CTA">
-                                  <MessageSquare className="h-4 w-4" />
-                                </button>
+                            <div className="rounded-lg border-2 border-[#EAEAEA] bg-white p-6">
+                              <div className="flex flex-col gap-1">
+                                <h3 className="text-sm font-semibold leading-[1.4] text-[#303030]">CTA</h3>
+                                <div className="flex items-start gap-4 py-1">
+                                  <p className="min-w-0 flex-1 text-sm leading-[1.4] text-[#303030]">Learn more</p>
+                                  <button
+                                    type="button"
+                                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#F6F6F6] text-[#303030] transition-colors hover:bg-[#EAEAEA] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#303030] focus-visible:ring-offset-1"
+                                    aria-label="Comment on CTA"
+                                  >
+                                    <MessageSquare className="h-4 w-4" />
+                                  </button>
+                                </div>
                               </div>
-                              <p className="text-sm text-[#303030]">Learn more</p>
                             </div>
                           </div>
 
@@ -2508,23 +2514,28 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                           </div>
                         </div>
 
-                        <div className="rounded-xl border border-[#E5E5E5] bg-white p-4">
-                          <div className="mb-3 flex items-center justify-between">
-                            <h3 className="text-sm font-semibold text-[#303030]">CTA</h3>
-                            <div className="rounded-lg border border-transparent bg-[#F6F6F6] px-3 py-1.5 text-sm text-[#303030]">
-                              <EditableTextBlock
-                                blockId="cta"
-                                isSelectable={isEditModeOpen}
-                                showBlockToolbar={isEditModeOpen}
-                                isSelected={selectedGoogleAdsTextBlockId === "cta"}
-                                isThinking={false}
-                                isStreaming={false}
-                                isFading={false}
-                                onSelect={() => handleGoogleAdsTextBlockSelect("cta", "cta")}
-                                className="inline-block text-sm text-[#303030]"
-                              >
-                                Learn more
-                              </EditableTextBlock>
+                        <div className="rounded-lg border-2 border-[#EAEAEA] bg-white p-6">
+                          <div className="flex flex-col gap-1">
+                            <h3 className="text-sm font-semibold leading-[1.4] text-[#303030]">CTA</h3>
+                            <div className="flex items-start gap-4 py-1">
+                              <div className="min-w-0 flex-1">
+                                <EditableTextBlock
+                                  blockId="cta"
+                                  isSelectable={isEditModeOpen}
+                                  showBlockToolbar={isEditModeOpen}
+                                  isSelected={selectedGoogleAdsTextBlockId === "cta"}
+                                  isThinking={false}
+                                  isStreaming={false}
+                                  isFading={false}
+                                  onSelect={() => handleGoogleAdsTextBlockSelect("cta", "cta")}
+                                  className="inline-block min-w-0 text-sm leading-[1.4] text-[#303030]"
+                                >
+                                  Learn more
+                                </EditableTextBlock>
+                              </div>
+                              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#F6F6F6] text-[#303030]">
+                                <MessageSquare className="h-4 w-4" aria-hidden="true" />
+                              </span>
                             </div>
                           </div>
                         </div>
