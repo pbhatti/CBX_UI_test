@@ -36,17 +36,17 @@ const GOOGLE_AD_PLACEMENT_OPTIONS: Array<{
 }> = [
   {
     label: "Display",
-    iconSrc: "http://localhost:3845/assets/1c4c35e9ab2bd96817294f4f4d3978805a0dfd40.svg",
+    iconSrc: "/images/Display ads icon.svg",
     iconAlt: "Display ads icon",
   },
   {
     label: "Gmail",
-    iconSrc: "http://localhost:3845/assets/16ea2add265315cc6ae56db48cf51224c0faf1df.png",
+    iconSrc: "/images/Gmail logo.svg",
     iconAlt: "Gmail icon",
   },
   {
     label: "Youtube",
-    iconSrc: "http://localhost:3845/assets/cf8cd2977e6c04b58e65ddb229c13a296e59ae83.png",
+    iconSrc: "/images/Youtube logo.svg",
     iconAlt: "YouTube icon",
   },
 ]
@@ -61,7 +61,7 @@ function GoogleAdsPlacementSwitcher({
   className?: string
 }) {
   return (
-    <div className={`inline-flex items-center rounded-[10px] bg-[#EAEAEA] p-[2px] ${className}`}>
+    <div className={`inline-flex w-fit items-center rounded-[10px] bg-[#EAEAEA] p-[2px] ${className}`}>
       {GOOGLE_AD_PLACEMENT_OPTIONS.map(({ label, iconSrc, iconAlt }) => {
         const isActive = value === label
 
@@ -91,7 +91,7 @@ function GoogleAdsPlacementSwitcher({
                 aria-hidden="true"
                 width={16}
                 height={16}
-                className="max-h-4 w-auto max-w-4 object-contain"
+                className="h-4 w-4 object-contain"
               />
             </span>
             <span className="relative z-[1]">{label}</span>
@@ -2530,7 +2530,14 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                         </div>
                       </div>
 
-                      <div className="sticky top-6 flex h-full w-[360px] shrink-0 self-start flex-col justify-center rounded-none bg-[var(--tw-ring-offset-color)] px-8 py-6 text-left">
+                      <div
+                        className="sticky top-6 flex h-full min-w-[360px] flex-1 self-start flex-col items-center justify-center rounded-none bg-[var(--tw-ring-offset-color)] px-8 py-6 text-left"
+                        style={{
+                          marginRight: isContentViewPanelCollapsed
+                            ? "min(calc((1120px - 100vw) / 2), 0px)"
+                            : "min(calc((1440px - 100vw) / 2), 0px)"
+                        }}
+                      >
                         <GoogleAdsPlacementSwitcher
                           value={selectedGoogleAdsPlacement}
                           onChange={setSelectedGoogleAdsPlacement}
