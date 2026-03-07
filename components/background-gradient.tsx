@@ -3673,8 +3673,8 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                             </DropdownMenu>
                           </div>
                         )}
-                        <div className="overflow-x-auto -mx-6 pl-12 pr-6 w-full min-w-[1200px] pt-0 flex-1 min-h-0 flex items-center">
-                        <div className="flex flex-row flex-nowrap gap-6 pb-4 justify-center items-start" style={{ width: 'max-content' }}>
+                        <div className="overflow-x-auto overflow-y-hidden overscroll-x-contain -mx-6 pl-12 pr-6 w-full min-w-0 pt-0 flex-1 min-h-0 flex items-center touch-pan-x">
+                        <div className="flex min-w-full w-max flex-row flex-nowrap items-start justify-start gap-6 pb-4">
                           {/* Reference Cards */}
                           {orderedSelectedAccounts.map((companyName) => (
                               contentViewType === "landing-pages" ? (
