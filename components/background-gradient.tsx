@@ -4061,6 +4061,17 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                       <h4 className="text-sm font-semibold text-[#303030]">Accounts</h4>
                                       <p className="text-xs text-[#5E5E5E] mt-1">You can select up to 2 accounts at a time</p>
                                     </div>
+                                    {/* Search */}
+                                    <div className="relative">
+                                      <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#8E8E8E]" aria-hidden />
+                                      <Input
+                                        placeholder="Search accounts"
+                                        value={accountSearch}
+                                        onChange={(e) => setAccountSearch(e.target.value)}
+                                        className="pl-9 h-8 text-xs bg-[#F6F6F6] border-[#E5E5E5]"
+                                        aria-label="Search accounts"
+                                      />
+                                    </div>
                                     {/* Selected tags */}
                                     {selectedAccounts.length > 0 && (
                                       <div className="flex flex-wrap gap-2">
@@ -4082,17 +4093,6 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                         ))}
                                       </div>
                                     )}
-                                    {/* Search */}
-                                    <div className="relative">
-                                      <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#8E8E8E]" aria-hidden />
-                                      <Input
-                                        placeholder="Search accounts"
-                                        value={accountSearch}
-                                        onChange={(e) => setAccountSearch(e.target.value)}
-                                        className="pl-9 h-8 text-xs bg-[#F6F6F6] border-[#E5E5E5]"
-                                        aria-label="Search accounts"
-                                      />
-                                    </div>
                                     {/* Account list */}
                                     <div className="max-h-[200px] overflow-y-auto space-y-1 pr-1">
                                       {ALL_ACCOUNTS.filter((a) =>
