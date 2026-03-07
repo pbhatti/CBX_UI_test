@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react"
 import { createPortal } from "react-dom"
+import { useIsPresent } from "framer-motion"
 import { Lock, MessageSquare, Copy, Tag } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -45,8 +46,9 @@ export function EditableTextBlock({
   onStreamingComplete,
   onSelect,
 }: EditableTextBlockProps) {
+  const isPresent = useIsPresent()
   const showOverlay = isThinking || isStreaming || isFading
-  const isToolbarVisible = isSelectable && showBlockToolbar && isSelected && !showOverlay
+  const isToolbarVisible = isPresent && isSelectable && showBlockToolbar && isSelected && !showOverlay
   const [visibleWordCount, setVisibleWordCount] = useState(0)
   const [toolbarPosition, setToolbarPosition] = useState<{ left: number; top: number } | null>(null)
   const [isMounted, setIsMounted] = useState(false)
@@ -110,21 +112,38 @@ export function EditableTextBlock({
       return
     }
 
+    let animationFrameId: number | null = null
+
     const updateToolbarPosition = () => {
       const rect = blockRef.current?.getBoundingClientRect()
       if (!rect) return
-      setToolbarPosition({
+      const nextPosition = {
         left: rect.right + 16,
         top: rect.top,
+      }
+
+      setToolbarPosition((prev) => {
+        if (prev && prev.left === nextPosition.left && prev.top === nextPosition.top) {
+          return prev
+        }
+        return nextPosition
       })
     }
 
-    const rafId = window.requestAnimationFrame(updateToolbarPosition)
+    const trackToolbarPosition = () => {
+      updateToolbarPosition()
+      animationFrameId = window.requestAnimationFrame(trackToolbarPosition)
+    }
+
+    updateToolbarPosition()
+    animationFrameId = window.requestAnimationFrame(trackToolbarPosition)
     window.addEventListener("resize", updateToolbarPosition)
     window.addEventListener("scroll", updateToolbarPosition, true)
 
     return () => {
-      window.cancelAnimationFrame(rafId)
+      if (animationFrameId != null) {
+        window.cancelAnimationFrame(animationFrameId)
+      }
       window.removeEventListener("resize", updateToolbarPosition)
       window.removeEventListener("scroll", updateToolbarPosition, true)
     }

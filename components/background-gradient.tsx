@@ -29,6 +29,8 @@ interface BackgroundGradientProps {
 type GoogleAdsSection = "headlines" | "long-headline" | "descriptions" | "cta"
 type GoogleAdsPlacement = "Display" | "Gmail" | "Youtube"
 
+const LINKEDIN_REFERENCE_SYNC_MS = 6000
+
 const GOOGLE_AD_PLACEMENT_OPTIONS: Array<{
   label: GoogleAdsPlacement
   iconSrc: string
@@ -102,6 +104,32 @@ function GoogleAdsPlacementSwitcher({
   )
 }
 
+function CarouselDots({
+  total = 4,
+  activeIndex = 0,
+  className = "",
+}: {
+  total?: number
+  activeIndex?: number
+  className?: string
+}) {
+  return (
+    <div
+      className={`flex items-center justify-center gap-2 ${className}`}
+      aria-hidden="true"
+    >
+      {Array.from({ length: total }).map((_, index) => (
+        <span
+          key={`carousel-dot-${index}`}
+          className={`inline-block h-2 w-2 rounded-full ${
+            index === activeIndex ? "bg-[#121212]" : "bg-[#D9D9D9]"
+          }`}
+        />
+      ))}
+    </div>
+  )
+}
+
 function FloatingFrameToolbar({
   actions,
   className = "",
@@ -114,20 +142,98 @@ function FloatingFrameToolbar({
   className?: string
 }) {
   return (
-    <div className={`absolute top-0 right-[-60px] flex flex-col gap-1 rounded-lg border border-[#f6f6f6] bg-white p-[3px] shadow-[0px_4px_8px_0px_rgba(18,18,18,0.12)] ${className}`}>
+    <div className={`absolute top-0 right-[-48px] flex w-10 flex-col gap-0 rounded-lg border border-[#f6f6f6] bg-white p-[3px] shadow-[0px_4px_8px_0px_rgba(18,18,18,0.12)] ${className}`}>
       {actions.map(({ icon: Icon, label, onClick }) => (
         <button
           key={label}
           type="button"
           aria-label={label}
           onClick={onClick}
-          className="flex h-10 w-10 items-center justify-center rounded-[4px] transition-colors hover:bg-[#f6f6f6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#303030] focus-visible:ring-offset-1"
+          className="flex h-8 w-8 items-center justify-center rounded-[4px] transition-colors hover:bg-[#f6f6f6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#303030] focus-visible:ring-offset-1"
         >
           <span className="flex h-4 w-4 shrink-0 items-center justify-center">
             <Icon className="h-4 w-4 text-[#303030]" aria-hidden="true" />
           </span>
         </button>
       ))}
+    </div>
+  )
+}
+
+function GoogleAdsFrameTitle() {
+  return (
+    <div className="flex items-center justify-between">
+      <span className="pl-1 text-xs font-medium leading-[1.4] text-[#5E5E5E]">All audiences</span>
+      <div className="flex h-6 items-center justify-center gap-1 rounded-lg px-1">
+        <span className="flex h-4 w-4 shrink-0 items-center justify-center">
+          <MessageSquare className="h-4 w-4 text-[#121212]" aria-hidden="true" />
+        </span>
+        <span className="text-xs font-medium leading-[1.4] text-[#121212]">3</span>
+      </div>
+    </div>
+  )
+}
+
+function LinkedInReferenceFrameTitle({
+  companyName,
+  isLoading,
+}: {
+  companyName: string
+  isLoading: boolean
+}) {
+  if (!isLoading) {
+    return (
+      <div className="mb-2 flex items-center justify-between gap-3 w-full">
+        <span className="text-xs font-medium text-[#5E5E5E] shrink-0">{companyName}</span>
+      </div>
+    )
+  }
+
+  return (
+    <div className="mb-1 flex h-6 w-full items-center justify-between gap-3" role="status" aria-live="polite">
+      <div className="flex min-w-0 items-center gap-2 pl-2">
+        <span className="relative flex h-4 w-4 shrink-0 items-center justify-center" aria-hidden="true">
+          <span className="absolute h-4 w-4 rounded-full bg-[#E9D8FD] blur-[2px]" />
+          <span className="relative h-2 w-2 rounded-full bg-[#121212] animate-pulse motion-reduce:animate-none" />
+        </span>
+        <span className="truncate text-xs leading-[1.4] text-[#37206E]">{`Loading ${companyName}...`}</span>
+      </div>
+      <span className="shrink-0 text-xs leading-[1.4] text-[#5E5E5E]">This might take up to 30 seconds.</span>
+    </div>
+  )
+}
+
+function LinkedInReferenceEditedBlockSkeleton({
+  blockId,
+}: {
+  blockId: EditableBlockId
+}) {
+  if (blockId === "cta") {
+    return (
+      <div className="p-1" aria-hidden="true">
+        <div className="skeleton-shimmer h-3.5 rounded w-[204px]" />
+      </div>
+    )
+  }
+
+  if (blockId === "body") {
+    return (
+      <div className="flex flex-col gap-2 p-1" aria-hidden="true">
+        <div className="skeleton-shimmer h-3.5 rounded w-full" />
+        <div className="skeleton-shimmer h-3.5 rounded w-full" />
+        <div className="skeleton-shimmer h-3.5 rounded w-[92%]" />
+        <div className="skeleton-shimmer h-3.5 rounded w-[84%]" />
+        <div className="skeleton-shimmer h-3.5 rounded w-full" />
+        <div className="skeleton-shimmer h-3.5 rounded w-[72%]" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col gap-1 p-1" aria-hidden="true">
+      <div className="skeleton-shimmer h-3 rounded w-full" />
+      <div className="skeleton-shimmer h-3 rounded w-full" />
+      <div className="skeleton-shimmer h-3 rounded w-[204px]" />
     </div>
   )
 }
@@ -168,8 +274,9 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
   const [editTopbarOption, setEditTopbarOption] = useState<"Edge-aligned Divider" | "Surface-based Separation" | "Framed Side Pane">("Surface-based Separation")
   const [isFramedPaneAnimating, setIsFramedPaneAnimating] = useState(false)
   const framedPaneTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const [referenceTitlesLoaded, setReferenceTitlesLoaded] = useState(false)
-  const referenceTitlesTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [lastAiEditedBlockId, setLastAiEditedBlockId] = useState<EditableBlockId | null>(null)
+  const [referenceSyncLoadingBlockId, setReferenceSyncLoadingBlockId] = useState<EditableBlockId | null>(null)
+  const referenceSyncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Select references popover (Figma: Personalisation by)
   const [selectedPersona, setSelectedPersona] = useState("data-leader")
@@ -280,6 +387,9 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
         ...prev,
         [blockId]: MOCK_AI_BLOCK_UPDATES[blockId],
       }))
+      if (contentViewType === "linkedin-ads") {
+        setLastAiEditedBlockId(blockId)
+      }
       setStreamingTarget(null)
       setBlockStreamingId(null)
       setBlockFadeId(blockId)
@@ -295,7 +405,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
         aiPanelRef.current?.appendAIMessage(message)
       }, FADE_MS)
     },
-    [MOCK_AI_BLOCK_UPDATES]
+    [MOCK_AI_BLOCK_UPDATES, contentViewType]
   )
 
   const handleApplyToBlock = useCallback(
@@ -339,8 +449,15 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
       setBlockStreamingId(null)
       setBlockFadeId(null)
       setStreamingTarget(null)
+      setLastAiEditedBlockId(null)
     }
   }, [isEditModeOpen, clearBlockTimers])
+
+  useEffect(() => {
+    if (contentViewType !== "linkedin-ads") {
+      setLastAiEditedBlockId(null)
+    }
+  }, [contentViewType])
 
   const isGoogleAdsEditMode = isEditModeOpen && contentViewType === "google-ads"
 
@@ -379,25 +496,33 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
   const isChatCollapsed = !isGoogleAdsEditMode && showReferences
 
   useEffect(() => {
-    if (showReferences) {
-      setReferenceTitlesLoaded(false)
-      referenceTitlesTimerRef.current = setTimeout(() => {
-        referenceTitlesTimerRef.current = null
-        setReferenceTitlesLoaded(true)
-      }, 6000)
+    if (referenceSyncTimerRef.current) {
+      clearTimeout(referenceSyncTimerRef.current)
+      referenceSyncTimerRef.current = null
+    }
+
+    if (showReferences && isEditModeOpen && contentViewType === "linkedin-ads" && lastAiEditedBlockId) {
+      setReferenceSyncLoadingBlockId(lastAiEditedBlockId)
+      referenceSyncTimerRef.current = setTimeout(() => {
+        referenceSyncTimerRef.current = null
+        setReferenceSyncLoadingBlockId(null)
+      }, LINKEDIN_REFERENCE_SYNC_MS)
     } else {
-      if (referenceTitlesTimerRef.current) {
-        clearTimeout(referenceTitlesTimerRef.current)
-        referenceTitlesTimerRef.current = null
-      }
-      setReferenceTitlesLoaded(false)
+      setReferenceSyncLoadingBlockId(null)
     }
+
     return () => {
-      if (referenceTitlesTimerRef.current) {
-        clearTimeout(referenceTitlesTimerRef.current)
+      if (referenceSyncTimerRef.current) {
+        clearTimeout(referenceSyncTimerRef.current)
+        referenceSyncTimerRef.current = null
       }
     }
-  }, [showReferences])
+  }, [showReferences, isEditModeOpen, contentViewType, lastAiEditedBlockId])
+
+  const activeReferenceSyncBlockId =
+    showReferences && isEditModeOpen && contentViewType === "linkedin-ads"
+      ? referenceSyncLoadingBlockId
+      : null
 
   useEffect(() => {
     // Hide navigation after 8 seconds
@@ -1110,24 +1235,18 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                     >
                       <div className="flex h-full items-stretch gap-10">
                         <div className="flex w-[60%] min-w-0 items-start gap-2 pt-8">
-                          <div className="flex-1 space-y-3">
+                          <div className="flex-1">
+                            <div className="mb-2">
+                              <GoogleAdsFrameTitle />
+                            </div>
+                            <div className="space-y-3">
                             <div className="rounded-xl border border-[#eaeaea] bg-white p-4">
                               <div className="mb-3">
                                 <h3 className="text-sm font-semibold text-[#303030]">Headlines</h3>
                               </div>
                               <div className="space-y-4">
                                 {GOOGLE_AD_HEADLINES.map((headline, index) => (
-                                  <div key={headline} className="flex items-center justify-between gap-4">
-                                    <p className="min-w-0 flex-1 text-sm text-[#303030]">{headline}</p>
-                                    <button
-                                      key={`google-headline-comment-${index}`}
-                                      type="button"
-                                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#f6f6f6] text-[#303030] hover:bg-[#eaeaea]"
-                                      aria-label={`Comment on headline ${index + 1}`}
-                                    >
-                                      <MessageSquare className="h-4 w-4" />
-                                    </button>
-                                  </div>
+                                  <p key={headline} className="min-w-0 text-sm text-[#303030]">{headline}</p>
                                 ))}
                               </div>
                             </div>
@@ -1136,12 +1255,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                               <div className="mb-3">
                                 <h3 className="text-sm font-semibold text-[#303030]">Long headline</h3>
                               </div>
-                              <div className="flex items-center justify-between gap-4">
-                                <p className="min-w-0 flex-1 text-sm text-[#303030]">Supercharge your sales growth with innovative strategies</p>
-                                <button type="button" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#f6f6f6] text-[#303030] hover:bg-[#eaeaea]" aria-label="Comment on long headline">
-                                  <MessageSquare className="h-4 w-4" />
-                                </button>
-                              </div>
+                              <p className="text-sm text-[#303030]">Supercharge your sales growth with innovative strategies</p>
                             </div>
 
                             <div className="rounded-xl border border-[#eaeaea] bg-white p-4">
@@ -1150,39 +1264,21 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                               </div>
                               <div className="space-y-4">
                                 {GOOGLE_AD_DESCRIPTIONS.map((description, index) => (
-                                  <div key={description} className="flex items-start justify-between gap-4">
-                                    <p className="min-w-0 flex-1 text-sm leading-[1.45] text-[#303030]">{description}</p>
-                                    <button
-                                      key={`google-description-comment-${index}`}
-                                      type="button"
-                                      className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#f6f6f6] text-[#303030] hover:bg-[#eaeaea]"
-                                      aria-label={`Comment on description ${index + 1}`}
-                                    >
-                                      <MessageSquare className="h-4 w-4" />
-                                    </button>
-                                  </div>
+                                  <p key={description} className="min-w-0 text-sm leading-[1.45] text-[#303030]">{description}</p>
                                 ))}
                               </div>
                             </div>
 
-                            <div className="rounded-lg border-2 border-[#EAEAEA] bg-white p-6">
+                            <div className="rounded-xl border border-[#E5E5E5] bg-white p-6" style={{ borderImage: "none" }}>
                               <div className="flex flex-col gap-1">
                                 <h3 className="text-sm font-semibold leading-[1.4] text-[#303030]">CTA</h3>
-                                <div className="flex items-start gap-4 py-1">
-                                  <p className="min-w-0 flex-1 text-sm leading-[1.4] text-[#303030]">Learn more</p>
-                                  <button
-                                    type="button"
-                                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#F6F6F6] text-[#303030] transition-colors hover:bg-[#EAEAEA] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#303030] focus-visible:ring-offset-1"
-                                    aria-label="Comment on CTA"
-                                  >
-                                    <MessageSquare className="h-4 w-4" />
-                                  </button>
-                                </div>
+                                <p className="py-1 text-sm leading-[1.4] text-[#303030]">Learn more</p>
                               </div>
                             </div>
                           </div>
+                          </div>
 
-                          <div className="flex flex-col gap-1 rounded-lg border border-[#F6F6F6] bg-white p-[3px] shadow-[0px_4px_8px_0px_rgba(18,18,18,0.12)]">
+                          <div className="mt-8 flex flex-col gap-1 rounded-lg border border-[#F6F6F6] bg-white p-[3px] shadow-[0px_4px_8px_0px_rgba(18,18,18,0.12)]">
                             {[
                               { icon: PenLine, label: "Edit Google Ads frame" },
                               { icon: Sparkles, label: "Regenerate Google Ads frame" },
@@ -1213,66 +1309,65 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                         </div>
 
                         <div
-                          className="flex flex-1 min-w-[360px] flex-col items-center justify-start gap-6 border border-[#eaeaea] bg-white px-8 py-6"
+                          className="flex flex-1 min-w-[360px] flex-col items-center justify-start gap-6 border border-[#eaeaea] bg-white px-8 py-8"
                           style={{
                             marginRight: isContentViewPanelCollapsed
                               ? "min(calc((1120px - 100vw) / 2), 0px)"
                               : "min(calc((1440px - 100vw) / 2), 0px)"
                           }}
                         >
+                          <h3 className="text-center text-sm font-semibold leading-[1.4] text-[#303030]">
+                            Preview
+                          </h3>
                           <GoogleAdsPlacementSwitcher
                             value={selectedGoogleAdsPlacement}
                             onChange={setSelectedGoogleAdsPlacement}
-                            className="mb-6"
                           />
 
-                          <div className="relative mx-auto w-[280px] rounded-[32px] border border-[#e5e5e5] bg-white p-4 shadow-sm">
-                            <div className="mb-4 flex items-center justify-between">
-                              <div className="space-y-1">
-                                <div className="h-1.5 w-3 rounded-full bg-[#8E8E8E]" />
-                                <div className="h-1 w-16 rounded-full bg-[#D9D9D9]" />
+                          <div className="flex flex-col items-center">
+                            <div className="relative mx-auto w-[280px] origin-top scale-[1.2] rounded-[32px] border border-[#e5e5e5] bg-white p-4 shadow-sm">
+                              <div className="mb-4 flex items-center justify-between">
+                                <div className="space-y-1">
+                                  <div className="h-1.5 w-3 rounded-full bg-[#8E8E8E]" />
+                                  <div className="h-1 w-16 rounded-full bg-[#D9D9D9]" />
+                                </div>
+                                <SearchIcon className="h-4 w-4 text-[#8E8E8E]" />
                               </div>
-                              <SearchIcon className="h-4 w-4 text-[#8E8E8E]" />
-                            </div>
-                            <div className="space-y-2 mb-4">
-                              {Array.from({ length: 6 }).map((_, index) => (
-                                <div key={`google-ads-line-${index}`} className="h-1.5 rounded-full bg-[#E5E5E5]" />
-                              ))}
-                            </div>
-                            <div className="rounded-2xl border border-[#E5E5E5] p-3">
-                              <div className="mb-3 h-[92px] rounded-xl bg-gradient-to-r from-[#EAF2FF] to-[#DCEBFF] p-3 flex items-end">
-                                <div className="max-w-[150px]">
-                                  <p className="text-[10px] font-semibold uppercase tracking-wide text-[#1574D2]">Get the all-in-one CRM free for 30 days, then save 40%.</p>
-                                  <div className="mt-2 inline-flex rounded-md bg-[#1574D2] px-2 py-1 text-[9px] font-medium text-white">Try Starter free</div>
+                              <div className="space-y-2 mb-4">
+                                {Array.from({ length: 6 }).map((_, index) => (
+                                  <div key={`google-ads-line-${index}`} className="h-1.5 rounded-full bg-[#E5E5E5]" />
+                                ))}
+                              </div>
+                              <div className="rounded-2xl border border-[#E5E5E5] p-3">
+                                <div className="mb-3 h-[92px] rounded-xl bg-gradient-to-r from-[#EAF2FF] to-[#DCEBFF] p-3 flex items-end">
+                                  <div className="max-w-[150px]">
+                                    <p className="text-[10px] font-semibold uppercase tracking-wide text-[#1574D2]">Get the all-in-one CRM free for 30 days, then save 40%.</p>
+                                    <div className="mt-2 inline-flex rounded-md bg-[#1574D2] px-2 py-1 text-[9px] font-medium text-white">Try Starter free</div>
+                                  </div>
+                                </div>
+                                <div className="flex items-start gap-2">
+                                  <div className="mt-1 h-5 w-5 rounded-full bg-[#1A73E8]" />
+                                  <div className="min-w-0">
+                                    <p className="text-xs font-semibold text-[#121212]">Accelerate sales growth</p>
+                                    <p className="mt-1 text-[11px] leading-[1.35] text-[#5E5E5E]">
+                                      Unlock rapid growth with analytics product! Our customers have seen a 30% increase in efficiency.
+                                    </p>
+                                    <button type="button" className="mt-3 rounded-md border border-[#AECBFA] px-3 py-1 text-[11px] font-medium text-[#1A73E8]">
+                                      Learn more
+                                    </button>
+                                  </div>
                                 </div>
                               </div>
-                              <div className="flex items-start gap-2">
-                                <div className="mt-1 h-5 w-5 rounded-full bg-[#1A73E8]" />
-                                <div className="min-w-0">
-                                  <p className="text-xs font-semibold text-[#121212]">Accelerate sales growth</p>
-                                  <p className="mt-1 text-[11px] leading-[1.35] text-[#5E5E5E]">
-                                    Unlock rapid growth with analytics product! Our customers have seen a 30% increase in efficiency.
-                                  </p>
-                                  <button type="button" className="mt-3 rounded-md border border-[#AECBFA] px-3 py-1 text-[11px] font-medium text-[#1A73E8]">
-                                    Learn more
-                                  </button>
-                                </div>
+                              <div className="mt-4 space-y-2">
+                                {Array.from({ length: 4 }).map((_, index) => (
+                                  <div key={`google-ads-bottom-line-${index}`} className="h-1.5 rounded-full bg-[#EAEAEA]" />
+                                ))}
                               </div>
                             </div>
-                            <div className="mt-4 space-y-2">
-                              {Array.from({ length: 4 }).map((_, index) => (
-                                <div key={`google-ads-bottom-line-${index}`} className="h-1.5 rounded-full bg-[#EAEAEA]" />
-                              ))}
-                            </div>
-                          </div>
 
-                          <div className="mt-8 flex items-center gap-2">
-                            <span className="h-2 w-2 rounded-full bg-[#121212]" />
-                            <span className="h-2 w-2 rounded-full bg-[#D9D9D9]" />
-                            <span className="h-2 w-2 rounded-full bg-[#D9D9D9]" />
-                            <span className="h-2 w-2 rounded-full bg-[#D9D9D9]" />
+                            <CarouselDots className="mt-[120px] h-2 w-14 py-[4px]" />
                           </div>
-                          <p className="mt-8 max-w-[340px] text-center text-sm leading-[1.45] text-[#5E5E5E]">
+                          <p className="mt-6 max-w-[340px] text-center text-sm leading-[1.45] text-[#5E5E5E]">
                             Google dynamically combines headlines and descriptions based on performance and placement.
                           </p>
                         </div>
@@ -1282,7 +1377,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                     LANDING_PAGE_PREVIEW_ACCOUNTS.map((companyName, index) => (
                       <motion.div
                         key={`landing-page-${companyName}`}
-                        className="flex-shrink-0 pr-[60px]"
+                        className="flex-shrink-0 pr-[48px]"
                         initial={{ x: 200, opacity: 0 }}
                         animate={{ x: 0, opacity: 1 }}
                         transition={{ type: "spring", stiffness: 150, damping: 24, delay: index * 0.08 }}
@@ -1355,7 +1450,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                 </div>
                               </div>
                             </div>
-                            <div className="absolute top-0 right-[-60px] bg-white border border-[#f6f6f6] rounded-lg shadow-[0px_4px_8px_0px_rgba(18,18,18,0.12)] p-[3px] flex flex-col gap-1">
+                            <div className="absolute top-0 right-[-48px] flex w-10 flex-col gap-1 rounded-lg border border-[#f6f6f6] bg-white p-[3px] shadow-[0px_4px_8px_0px_rgba(18,18,18,0.12)]">
                               {[
                                 { icon: PenLine, label: "Edit landing page" },
                                 { icon: Expand, label: "Expand landing page" },
@@ -1375,10 +1470,10 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                         }
                                       : undefined
                                   }
-                                  className="w-10 h-10 rounded-[4px] flex items-center justify-center hover:bg-[#f6f6f6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#303030] focus-visible:ring-offset-1 transition-colors"
+                                  className="flex h-8 w-8 items-center justify-center rounded-[4px] transition-colors hover:bg-[#f6f6f6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#303030] focus-visible:ring-offset-1"
                                 >
-                                  <span className="w-4 h-4 flex items-center justify-center shrink-0">
-                                    <Icon className="w-4 h-4 text-[#303030]" aria-hidden="true" />
+                                  <span className="flex h-4 w-4 shrink-0 items-center justify-center">
+                                    <Icon className="h-4 w-4 text-[#303030]" aria-hidden="true" />
                                   </span>
                                 </button>
                               ))}
@@ -1394,7 +1489,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                     <motion.div 
                       layout
                       layoutId="apple-frame"
-                      className="flex-shrink-0 pr-[60px]"
+                      className="flex-shrink-0 pr-[48px]"
                       initial={{ x: 200, opacity: 0 }}
                       animate={{ x: 0, opacity: 1 }}
                       transition={{ type: "spring", stiffness: 150, damping: 24 }}
@@ -1535,7 +1630,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                   
                   {/* Tesla Column */}
                   <motion.div 
-                    className="flex-shrink-0 pr-[60px]"
+                    className="flex-shrink-0 pr-[48px]"
                     initial={{ x: 200, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     transition={{ duration: 2, ease: [0.4, 0, 0.2, 1], delay: 0.2 }}
@@ -1672,7 +1767,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                   
                   {/* Reliance Column */}
                   <motion.div 
-                    className="flex-shrink-0 pr-[60px]"
+                    className="flex-shrink-0 pr-[48px]"
                     initial={{ x: 200, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     transition={{ duration: 2, ease: [0.4, 0, 0.2, 1], delay: 0.4 }}
@@ -1809,7 +1904,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                   
                   {/* Myntra Column */}
                   <motion.div 
-                    className="flex-shrink-0 pr-[60px]"
+                    className="flex-shrink-0 pr-[48px]"
                     initial={{ x: 200, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     transition={{ duration: 2, ease: [0.4, 0, 0.2, 1], delay: 0.6 }}
@@ -1946,7 +2041,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                   
                   {/* Open AI Column */}
                   <motion.div 
-                    className="flex-shrink-0 pr-[60px]"
+                    className="flex-shrink-0 pr-[48px]"
                     initial={{ x: 200, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     transition={{ duration: 2, ease: [0.4, 0, 0.2, 1], delay: 1.0 }}
@@ -2421,7 +2516,11 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                     }}
                   >
                     <div className="mx-auto flex h-full w-full max-w-[1120px] items-start gap-10 pl-6 pr-0 py-0">
-                      <div className="min-w-0 flex-1 space-y-3 pt-8">
+                      <div className="min-w-0 flex-1 pt-8">
+                        <div className="mb-2">
+                          <GoogleAdsFrameTitle />
+                        </div>
+                        <div className="space-y-3">
                         <div className="rounded-xl border border-[#E5E5E5] bg-white p-4">
                           <div className="mb-3">
                             <h3 className="text-sm font-semibold text-[#303030]">Headlines</h3>
@@ -2447,9 +2546,6 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                     {headline}
                                   </EditableTextBlock>
                                 </div>
-                                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#F6F6F6] text-[#303030]">
-                                  <MessageSquare className="h-4 w-4" aria-hidden="true" />
-                                </span>
                               </div>
                             ))}
                           </div>
@@ -2459,26 +2555,19 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                           <div className="mb-3">
                             <h3 className="text-sm font-semibold text-[#303030]">Long headline</h3>
                           </div>
-                          <div className="flex w-full items-start justify-between gap-0 rounded-lg border border-transparent text-left">
-                            <div className="min-w-0 flex-1">
-                              <EditableTextBlock
-                                blockId="headline"
-                                isSelectable={isEditModeOpen}
-                                showBlockToolbar={isEditModeOpen}
-                                isSelected={selectedGoogleAdsTextBlockId === "long-headline"}
-                                isThinking={false}
-                                isStreaming={false}
-                                isFading={false}
-                                onSelect={() => handleGoogleAdsTextBlockSelect("long-headline", "long-headline")}
-                                className="text-sm leading-[1.45] text-[#303030]"
-                              >
-                                Supercharge your sales growth with innovative strategies
-                              </EditableTextBlock>
-                            </div>
-                            <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#F6F6F6] text-[#303030]">
-                              <MessageSquare className="h-4 w-4" aria-hidden="true" />
-                            </span>
-                          </div>
+                          <EditableTextBlock
+                            blockId="headline"
+                            isSelectable={isEditModeOpen}
+                            showBlockToolbar={isEditModeOpen}
+                            isSelected={selectedGoogleAdsTextBlockId === "long-headline"}
+                            isThinking={false}
+                            isStreaming={false}
+                            isFading={false}
+                            onSelect={() => handleGoogleAdsTextBlockSelect("long-headline", "long-headline")}
+                            className="text-sm leading-[1.45] text-[#303030]"
+                          >
+                            Supercharge your sales growth with innovative strategies
+                          </EditableTextBlock>
                         </div>
 
                         <div className="rounded-xl border border-[#E5E5E5] bg-white p-4">
@@ -2506,109 +2595,101 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                     {description}
                                   </EditableTextBlock>
                                 </div>
-                                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#F6F6F6] text-[#303030]">
-                                  <MessageSquare className="h-4 w-4" aria-hidden="true" />
-                                </span>
                               </div>
                             ))}
                           </div>
                         </div>
 
-                        <div className="rounded-lg border-2 border-[#EAEAEA] bg-white p-6">
+                        <div className="rounded-xl border border-[#E5E5E5] bg-white p-6">
                           <div className="flex flex-col gap-1">
                             <h3 className="text-sm font-semibold leading-[1.4] text-[#303030]">CTA</h3>
-                            <div className="flex items-start gap-4 py-1">
-                              <div className="min-w-0 flex-1">
-                                <EditableTextBlock
-                                  blockId="cta"
-                                  isSelectable={isEditModeOpen}
-                                  showBlockToolbar={isEditModeOpen}
-                                  isSelected={selectedGoogleAdsTextBlockId === "cta"}
-                                  isThinking={false}
-                                  isStreaming={false}
-                                  isFading={false}
-                                  onSelect={() => handleGoogleAdsTextBlockSelect("cta", "cta")}
-                                  className="inline-block min-w-0 text-sm leading-[1.4] text-[#303030]"
-                                >
-                                  Learn more
-                                </EditableTextBlock>
-                              </div>
-                              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#F6F6F6] text-[#303030]">
-                                <MessageSquare className="h-4 w-4" aria-hidden="true" />
-                              </span>
+                            <div className="py-1">
+                              <EditableTextBlock
+                                blockId="cta"
+                                isSelectable={isEditModeOpen}
+                                showBlockToolbar={isEditModeOpen}
+                                isSelected={selectedGoogleAdsTextBlockId === "cta"}
+                                isThinking={false}
+                                isStreaming={false}
+                                isFading={false}
+                                onSelect={() => handleGoogleAdsTextBlockSelect("cta", "cta")}
+                                className="inline-block min-w-0 text-sm leading-[1.4] text-[#303030]"
+                              >
+                                Learn more
+                              </EditableTextBlock>
                             </div>
                           </div>
+                        </div>
                         </div>
                       </div>
 
                       <div
-                        className="sticky top-6 flex h-full min-w-[360px] flex-1 self-start flex-col items-center justify-center rounded-none bg-[var(--tw-ring-offset-color)] px-8 py-6 text-left"
+                        className="sticky top-0 flex h-full min-w-[360px] flex-1 self-start flex-col items-center justify-start gap-6 border border-[#eaeaea] bg-white px-8 py-8"
                         style={{
                           marginRight: isContentViewPanelCollapsed
                             ? "min(calc((1120px - 100vw) / 2), 0px)"
                             : "min(calc((1440px - 100vw) / 2), 0px)"
                         }}
                       >
+                        <h3 className="text-center text-sm font-semibold leading-[1.4] text-[#303030]">
+                          Preview
+                        </h3>
                         <GoogleAdsPlacementSwitcher
                           value={selectedGoogleAdsPlacement}
                           onChange={setSelectedGoogleAdsPlacement}
-                          className="mb-6"
                         />
 
-                        <div className="relative mx-auto w-[280px] rounded-[32px] border border-[#E5E5E5] bg-white p-4 shadow-sm">
-                          <div className="mb-4 flex items-center justify-between">
-                            <div className="space-y-1">
-                              <div className="h-1.5 w-3 rounded-full bg-[#8E8E8E]" />
-                              <div className="h-1 w-16 rounded-full bg-[#D9D9D9]" />
+                        <div className="flex flex-col items-center">
+                          <div className="relative mx-auto w-[280px] origin-top scale-[1.2] rounded-[32px] border border-[#E5E5E5] bg-white p-4 shadow-sm">
+                            <div className="mb-4 flex items-center justify-between">
+                              <div className="space-y-1">
+                                <div className="h-1.5 w-3 rounded-full bg-[#8E8E8E]" />
+                                <div className="h-1 w-16 rounded-full bg-[#D9D9D9]" />
+                              </div>
+                              <SearchIcon className="h-4 w-4 text-[#8E8E8E]" aria-hidden="true" />
                             </div>
-                            <SearchIcon className="h-4 w-4 text-[#8E8E8E]" aria-hidden="true" />
-                          </div>
-                          <div className="mb-4 space-y-2">
-                            {Array.from({ length: 6 }).map((_, index) => (
-                              <div key={`google-edit-top-line-${index}`} className="h-1.5 rounded-full bg-[#E5E5E5]" />
-                            ))}
-                          </div>
-                          <div className="rounded-2xl border border-[#E5E5E5] p-3">
-                            <div className="mb-3 h-[92px] rounded-xl bg-gradient-to-r from-[#EAF2FF] to-[#DCEBFF] p-3 flex items-end">
-                              <div className="max-w-[150px]">
-                                <p className="text-[10px] font-semibold uppercase tracking-wide text-[#1574D2]">
-                                  Get the all-in-one CRM free for 30 days, then save 40%.
-                                </p>
-                                <div className="mt-2 inline-flex rounded-md bg-[#1574D2] px-2 py-1 text-[9px] font-medium text-white">
-                                  Try Starter free
+                            <div className="mb-4 space-y-2">
+                              {Array.from({ length: 6 }).map((_, index) => (
+                                <div key={`google-edit-top-line-${index}`} className="h-1.5 rounded-full bg-[#E5E5E5]" />
+                              ))}
+                            </div>
+                            <div className="rounded-2xl border border-[#E5E5E5] p-3">
+                              <div className="mb-3 h-[92px] rounded-xl bg-gradient-to-r from-[#EAF2FF] to-[#DCEBFF] p-3 flex items-end">
+                                <div className="max-w-[150px]">
+                                  <p className="text-[10px] font-semibold uppercase tracking-wide text-[#1574D2]">
+                                    Get the all-in-one CRM free for 30 days, then save 40%.
+                                  </p>
+                                  <div className="mt-2 inline-flex rounded-md bg-[#1574D2] px-2 py-1 text-[9px] font-medium text-white">
+                                    Try Starter free
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex items-start gap-2">
+                                <div className="mt-1 h-5 w-5 rounded-full bg-[#1A73E8]" />
+                                <div className="min-w-0">
+                                  <p className="text-xs font-semibold text-[#121212]">{GOOGLE_AD_HEADLINES[0]}</p>
+                                  <p className="mt-1 text-[11px] leading-[1.35] text-[#5E5E5E]">
+                                    {GOOGLE_AD_DESCRIPTIONS[0]}
+                                  </p>
+                                  <button
+                                    type="button"
+                                    className="mt-3 rounded-md border border-[#AECBFA] px-3 py-1 text-[11px] font-medium text-[#1A73E8]"
+                                  >
+                                    Learn more
+                                  </button>
                                 </div>
                               </div>
                             </div>
-                            <div className="flex items-start gap-2">
-                              <div className="mt-1 h-5 w-5 rounded-full bg-[#1A73E8]" />
-                              <div className="min-w-0">
-                                <p className="text-xs font-semibold text-[#121212]">{GOOGLE_AD_HEADLINES[0]}</p>
-                                <p className="mt-1 text-[11px] leading-[1.35] text-[#5E5E5E]">
-                                  {GOOGLE_AD_DESCRIPTIONS[0]}
-                                </p>
-                                <button
-                                  type="button"
-                                  className="mt-3 rounded-md border border-[#AECBFA] px-3 py-1 text-[11px] font-medium text-[#1A73E8]"
-                                >
-                                  Learn more
-                                </button>
-                              </div>
+                            <div className="mt-4 space-y-2">
+                              {Array.from({ length: 4 }).map((_, index) => (
+                                <div key={`google-edit-bottom-line-${index}`} className="h-1.5 rounded-full bg-[#EAEAEA]" />
+                              ))}
                             </div>
                           </div>
-                          <div className="mt-4 space-y-2">
-                            {Array.from({ length: 4 }).map((_, index) => (
-                              <div key={`google-edit-bottom-line-${index}`} className="h-1.5 rounded-full bg-[#EAEAEA]" />
-                            ))}
-                          </div>
-                        </div>
 
-                        <div className="mt-8 flex items-center justify-center gap-2">
-                          <span className="h-2 w-2 rounded-full bg-[#121212]" />
-                          <span className="h-2 w-2 rounded-full bg-[#D9D9D9]" />
-                          <span className="h-2 w-2 rounded-full bg-[#D9D9D9]" />
-                          <span className="h-2 w-2 rounded-full bg-[#D9D9D9]" />
+                          <CarouselDots className="mt-[120px] h-2 w-14 py-[4px]" />
                         </div>
-                        <p className="mx-auto mt-8 max-w-[270px] text-center text-sm leading-[1.45] text-[#6A6A6A]">
+                        <p className="max-w-[340px] text-center text-sm leading-[1.45] text-[#5E5E5E]">
                           Google dynamically combines headlines and descriptions based on performance and placement.
                         </p>
 
@@ -2975,11 +3056,12 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                               </div>
                               ) : (
                               <div key={companyName} className="flex-shrink-0 w-[400px]">
-                                <div className="flex items-center justify-between mb-2 w-full gap-3">
-                                  <span className="text-xs font-medium text-[#5E5E5E] shrink-0">{companyName}</span>
-                                </div>
+                                <LinkedInReferenceFrameTitle
+                                  companyName={companyName}
+                                  isLoading={activeReferenceSyncBlockId != null}
+                                />
                                 <div className="bg-white rounded-lg border border-[#eaeaea] shadow-sm h-[675px] flex flex-col min-h-0 w-full overflow-hidden">
-                                  {!loadedReferenceFrames.has(companyName) ? (
+                                  {!loadedReferenceFrames.has(companyName) && activeReferenceSyncBlockId == null ? (
                                     /* Skeleton loader - Figma 2514:59960, #F6F6F6 */
                                     <div className="flex flex-col h-full">
                                       <div className="p-4 flex flex-col gap-4 flex-shrink-0">
@@ -3041,51 +3123,63 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                     </div>
                                     {/* Ad Copy */}
                                     <div className="space-y-2">
-                                      <EditableTextBlock
-                                        blockId="headline"
-                                        isSelectable={false}
-                                        showBlockToolbar={isEditModeOpen}
-                                        isSelected={false}
-                                        isThinking={blockThinkingId === "headline"}
-                                        isStreaming={blockStreamingId === "headline"}
-                                        isFading={blockFadeId === "headline"}
-                                        streamingText={streamingTarget?.blockId === "headline" ? streamingTarget.text : undefined}
-                                        onStreamingComplete={() => handleStreamingComplete("headline")}
-                                        onSelect={() => {}}
-                                        className="text-sm text-[#121212] font-medium"
-                                      >
-                                        {editBlockContent.headline}
-                                      </EditableTextBlock>
-                                      <EditableTextBlock
-                                        blockId="body"
-                                        isSelectable={false}
-                                        showBlockToolbar={isEditModeOpen}
-                                        isSelected={false}
-                                        isThinking={blockThinkingId === "body"}
-                                        isStreaming={blockStreamingId === "body"}
-                                        isFading={blockFadeId === "body"}
-                                        streamingText={streamingTarget?.blockId === "body" ? streamingTarget.text : undefined}
-                                        onStreamingComplete={() => handleStreamingComplete("body")}
-                                        onSelect={() => {}}
-                                        className="text-sm text-[#121212]"
-                                      >
-                                        {editBlockContent.body}
-                                      </EditableTextBlock>
-                                      <EditableTextBlock
-                                        blockId="cta"
-                                        isSelectable={false}
-                                        showBlockToolbar={isEditModeOpen}
-                                        isSelected={false}
-                                        isThinking={blockThinkingId === "cta"}
-                                        isStreaming={blockStreamingId === "cta"}
-                                        isFading={blockFadeId === "cta"}
-                                        streamingText={streamingTarget?.blockId === "cta" ? streamingTarget.text : undefined}
-                                        onStreamingComplete={() => handleStreamingComplete("cta")}
-                                        onSelect={() => {}}
-                                        className="text-sm text-[#0077b5] font-medium"
-                                      >
-                                        {editBlockContent.cta}
-                                      </EditableTextBlock>
+                                      {activeReferenceSyncBlockId === "headline" ? (
+                                        <LinkedInReferenceEditedBlockSkeleton blockId="headline" />
+                                      ) : (
+                                        <EditableTextBlock
+                                          blockId="headline"
+                                          isSelectable={false}
+                                          showBlockToolbar={isEditModeOpen}
+                                          isSelected={false}
+                                          isThinking={blockThinkingId === "headline"}
+                                          isStreaming={blockStreamingId === "headline"}
+                                          isFading={blockFadeId === "headline"}
+                                          streamingText={streamingTarget?.blockId === "headline" ? streamingTarget.text : undefined}
+                                          onStreamingComplete={() => handleStreamingComplete("headline")}
+                                          onSelect={() => {}}
+                                          className="text-sm text-[#121212] font-medium"
+                                        >
+                                          {editBlockContent.headline}
+                                        </EditableTextBlock>
+                                      )}
+                                      {activeReferenceSyncBlockId === "body" ? (
+                                        <LinkedInReferenceEditedBlockSkeleton blockId="body" />
+                                      ) : (
+                                        <EditableTextBlock
+                                          blockId="body"
+                                          isSelectable={false}
+                                          showBlockToolbar={isEditModeOpen}
+                                          isSelected={false}
+                                          isThinking={blockThinkingId === "body"}
+                                          isStreaming={blockStreamingId === "body"}
+                                          isFading={blockFadeId === "body"}
+                                          streamingText={streamingTarget?.blockId === "body" ? streamingTarget.text : undefined}
+                                          onStreamingComplete={() => handleStreamingComplete("body")}
+                                          onSelect={() => {}}
+                                          className="text-sm text-[#121212]"
+                                        >
+                                          {editBlockContent.body}
+                                        </EditableTextBlock>
+                                      )}
+                                      {activeReferenceSyncBlockId === "cta" ? (
+                                        <LinkedInReferenceEditedBlockSkeleton blockId="cta" />
+                                      ) : (
+                                        <EditableTextBlock
+                                          blockId="cta"
+                                          isSelectable={false}
+                                          showBlockToolbar={isEditModeOpen}
+                                          isSelected={false}
+                                          isThinking={blockThinkingId === "cta"}
+                                          isStreaming={blockStreamingId === "cta"}
+                                          isFading={blockFadeId === "cta"}
+                                          streamingText={streamingTarget?.blockId === "cta" ? streamingTarget.text : undefined}
+                                          onStreamingComplete={() => handleStreamingComplete("cta")}
+                                          onSelect={() => {}}
+                                          className="text-sm text-[#0077b5] font-medium"
+                                        >
+                                          {editBlockContent.cta}
+                                        </EditableTextBlock>
+                                      )}
                                     </div>
                                     {/* Ad Creative */}
                                     <div className="space-y-2">
@@ -3690,11 +3784,12 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                               </div>
                               ) : (
                               <div key={companyName} className="flex-shrink-0 w-[400px]">
-                                <div className="flex items-center justify-between mb-2 w-full gap-3">
-                                  <span className="text-xs font-medium text-[#5E5E5E] shrink-0">{companyName}</span>
-                                </div>
+                                <LinkedInReferenceFrameTitle
+                                  companyName={companyName}
+                                  isLoading={activeReferenceSyncBlockId != null}
+                                />
                                 <div className="bg-white rounded-lg border border-[#eaeaea] shadow-sm h-[675px] flex flex-col min-h-0 w-full overflow-hidden">
-                                  {!loadedReferenceFrames.has(companyName) ? (
+                                  {!loadedReferenceFrames.has(companyName) && activeReferenceSyncBlockId == null ? (
                                     /* Skeleton loader - Figma 2514:59960, #F6F6F6 */
                                     <div className="flex flex-col h-full">
                                       <div className="p-4 flex flex-col gap-4 flex-shrink-0">
@@ -3757,51 +3852,63 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                     
                                     {/* Ad Copy */}
                                     <div className="space-y-2">
-                                      <EditableTextBlock
-                                        blockId="headline"
-                                        isSelectable={false}
-                                        showBlockToolbar={isEditModeOpen}
-                                        isSelected={false}
-                                        isThinking={blockThinkingId === "headline"}
-                                        isStreaming={blockStreamingId === "headline"}
-                                        isFading={blockFadeId === "headline"}
-                                        streamingText={streamingTarget?.blockId === "headline" ? streamingTarget.text : undefined}
-                                        onStreamingComplete={() => handleStreamingComplete("headline")}
-                                        onSelect={() => {}}
-                                        className="text-sm text-[#121212] font-medium"
-                                      >
-                                        {editBlockContent.headline}
-                                      </EditableTextBlock>
-                                      <EditableTextBlock
-                                        blockId="body"
-                                        isSelectable={false}
-                                        showBlockToolbar={isEditModeOpen}
-                                        isSelected={false}
-                                        isThinking={blockThinkingId === "body"}
-                                        isStreaming={blockStreamingId === "body"}
-                                        isFading={blockFadeId === "body"}
-                                        streamingText={streamingTarget?.blockId === "body" ? streamingTarget.text : undefined}
-                                        onStreamingComplete={() => handleStreamingComplete("body")}
-                                        onSelect={() => {}}
-                                        className="text-sm text-[#121212]"
-                                      >
-                                        {editBlockContent.body}
-                                      </EditableTextBlock>
-                                      <EditableTextBlock
-                                        blockId="cta"
-                                        isSelectable={false}
-                                        showBlockToolbar={isEditModeOpen}
-                                        isSelected={false}
-                                        isThinking={blockThinkingId === "cta"}
-                                        isStreaming={blockStreamingId === "cta"}
-                                        isFading={blockFadeId === "cta"}
-                                        streamingText={streamingTarget?.blockId === "cta" ? streamingTarget.text : undefined}
-                                        onStreamingComplete={() => handleStreamingComplete("cta")}
-                                        onSelect={() => {}}
-                                        className="text-sm text-[#0077b5] font-medium"
-                                      >
-                                        {editBlockContent.cta}
-                                      </EditableTextBlock>
+                                      {activeReferenceSyncBlockId === "headline" ? (
+                                        <LinkedInReferenceEditedBlockSkeleton blockId="headline" />
+                                      ) : (
+                                        <EditableTextBlock
+                                          blockId="headline"
+                                          isSelectable={false}
+                                          showBlockToolbar={isEditModeOpen}
+                                          isSelected={false}
+                                          isThinking={blockThinkingId === "headline"}
+                                          isStreaming={blockStreamingId === "headline"}
+                                          isFading={blockFadeId === "headline"}
+                                          streamingText={streamingTarget?.blockId === "headline" ? streamingTarget.text : undefined}
+                                          onStreamingComplete={() => handleStreamingComplete("headline")}
+                                          onSelect={() => {}}
+                                          className="text-sm text-[#121212] font-medium"
+                                        >
+                                          {editBlockContent.headline}
+                                        </EditableTextBlock>
+                                      )}
+                                      {activeReferenceSyncBlockId === "body" ? (
+                                        <LinkedInReferenceEditedBlockSkeleton blockId="body" />
+                                      ) : (
+                                        <EditableTextBlock
+                                          blockId="body"
+                                          isSelectable={false}
+                                          showBlockToolbar={isEditModeOpen}
+                                          isSelected={false}
+                                          isThinking={blockThinkingId === "body"}
+                                          isStreaming={blockStreamingId === "body"}
+                                          isFading={blockFadeId === "body"}
+                                          streamingText={streamingTarget?.blockId === "body" ? streamingTarget.text : undefined}
+                                          onStreamingComplete={() => handleStreamingComplete("body")}
+                                          onSelect={() => {}}
+                                          className="text-sm text-[#121212]"
+                                        >
+                                          {editBlockContent.body}
+                                        </EditableTextBlock>
+                                      )}
+                                      {activeReferenceSyncBlockId === "cta" ? (
+                                        <LinkedInReferenceEditedBlockSkeleton blockId="cta" />
+                                      ) : (
+                                        <EditableTextBlock
+                                          blockId="cta"
+                                          isSelectable={false}
+                                          showBlockToolbar={isEditModeOpen}
+                                          isSelected={false}
+                                          isThinking={blockThinkingId === "cta"}
+                                          isStreaming={blockStreamingId === "cta"}
+                                          isFading={blockFadeId === "cta"}
+                                          streamingText={streamingTarget?.blockId === "cta" ? streamingTarget.text : undefined}
+                                          onStreamingComplete={() => handleStreamingComplete("cta")}
+                                          onSelect={() => {}}
+                                          className="text-sm text-[#0077b5] font-medium"
+                                        >
+                                          {editBlockContent.cta}
+                                        </EditableTextBlock>
+                                      )}
                                     </div>
                                     
                                     {/* Ad Creative */}
