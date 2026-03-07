@@ -1591,11 +1591,9 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                 top: 64,
                 right: 0,
                 bottom: 0,
-                backgroundImage: `
-                  linear-gradient(to right, rgba(0,0,0,0.02) 1px, transparent 1px),
-                  linear-gradient(to bottom, rgba(0,0,0,0.02) 1px, transparent 1px)
-                `,
-                backgroundSize: '20px 20px'
+                backgroundColor: 'rgba(234, 234, 234, 1)',
+                backgroundImage: 'radial-gradient(circle, rgba(196, 196, 196, 0.75) 1.2px, transparent 1.2px)',
+                backgroundSize: '18px 18px'
               }}
             >
               <div
@@ -2910,11 +2908,9 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                   <div
                     className="flex-1 overflow-y-auto bg-[#EAEAEA]"
                     style={{
-                      backgroundImage: `
-                        linear-gradient(to right, rgba(0,0,0,0.02) 1px, transparent 1px),
-                        linear-gradient(to bottom, rgba(0,0,0,0.02) 1px, transparent 1px)
-                      `,
-                      backgroundSize: "20px 20px",
+                      backgroundColor: "rgba(234, 234, 234, 1)",
+                      backgroundImage: "radial-gradient(circle, rgba(196, 196, 196, 0.75) 1.2px, transparent 1.2px)",
+                      backgroundSize: "18px 18px",
                     }}
                   >
                     <div className="mx-auto flex h-full w-full max-w-[1120px] items-start gap-10 pl-6 pr-0 py-0">
@@ -3700,11 +3696,9 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                 <div
                   className={`relative flex-1 flex flex-col overflow-y-auto bg-[#EAEAEA] min-h-0 ${showReferences ? "overflow-x-auto" : "overflow-x-visible"}`}
                   style={{
-                    backgroundImage: `
-                      linear-gradient(to right, rgba(0,0,0,0.02) 1px, transparent 1px),
-                      linear-gradient(to bottom, rgba(0,0,0,0.02) 1px, transparent 1px)
-                    `,
-                    backgroundSize: '20px 20px'
+                    backgroundColor: 'rgba(234, 234, 234, 1)',
+                    backgroundImage: 'radial-gradient(circle, rgba(196, 196, 196, 0.75) 1.2px, transparent 1.2px)',
+                    backgroundSize: '18px 18px',
                   }}
                 >
                   {!showReferences && (

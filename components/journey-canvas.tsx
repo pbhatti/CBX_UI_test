@@ -394,8 +394,9 @@ export function JourneyCanvas({ isLinkedInAd4Configured = false }: JourneyCanvas
       <div 
         className="w-full h-full min-h-full min-h-0 relative overflow-auto"
         style={{
-          backgroundImage: `radial-gradient(circle, #DEDEDE 1px, transparent 1px)`,
-          backgroundSize: '20px 20px',
+          backgroundColor: '#F8F8F8',
+          backgroundImage: 'radial-gradient(circle, rgba(196, 196, 196, 0.75) 1.2px, transparent 1.2px)',
+          backgroundSize: '18px 18px',
           backgroundPosition: `${pan.x}px ${pan.y}px`,
         }}
       >
