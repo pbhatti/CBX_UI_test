@@ -1,6 +1,6 @@
 "use client"
 
-import { X, ChevronDown, Settings, MoreVertical, MessageSquare, PanelLeftClose, ChevronRight, Search as SearchIcon, Sparkles, AlertTriangle, Lock, PenLine, Expand, Clock3, Copy, Tag, type LucideIcon } from "lucide-react"
+import { X, ChevronDown, Settings, MoreVertical, MessageSquare, PanelLeftClose, ChevronRight, Search as SearchIcon, Sparkles, AlertTriangle, Lock, PenLine, Expand, Clock3, Copy, Tag, Bell, Cast, type LucideIcon } from "lucide-react"
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion"
 import { useState, useEffect, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
@@ -28,6 +28,7 @@ interface BackgroundGradientProps {
 
 type GoogleAdsSection = "headlines" | "long-headline" | "descriptions" | "cta"
 type GoogleAdsPlacement = "Display" | "Gmail" | "Youtube"
+type GoogleAdsEditableBlockId = `headline-${number}` | "long-headline" | `description-${number}` | "cta"
 
 const LINKEDIN_REFERENCE_SYNC_MS = 6000
 
@@ -100,6 +101,204 @@ function GoogleAdsPlacementSwitcher({
           </button>
         )
       })}
+    </div>
+  )
+}
+
+function GoogleAdsYoutubePreview({
+  headline,
+  description,
+  cta,
+  isHeadlineLoading,
+  isDescriptionLoading,
+  isCtaLoading,
+}: {
+  headline: string
+  description: string
+  cta: string
+  isHeadlineLoading: boolean
+  isDescriptionLoading: boolean
+  isCtaLoading: boolean
+}) {
+  return (
+    <>
+      <div className="mb-3 flex justify-center">
+        <div className="h-1.5 w-12 rounded-full bg-[#D6D6D6]" />
+      </div>
+
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Image
+            src="/images/Youtube logo.svg"
+            alt=""
+            aria-hidden="true"
+            width={16}
+            height={16}
+            className="h-4 w-4 object-contain"
+          />
+          <span className="text-[12px] font-medium leading-[1.4] text-[#303030]">Youtube</span>
+        </div>
+        <div className="flex items-center gap-4 text-[#303030]">
+          <Cast className="h-4 w-4" aria-hidden="true" />
+          <Bell className="h-4 w-4" aria-hidden="true" />
+          <SearchIcon className="h-4 w-4" aria-hidden="true" />
+        </div>
+      </div>
+
+      <div className="overflow-hidden rounded-[8px]">
+        <div className="relative aspect-[269/126] w-full overflow-hidden rounded-[8px]">
+          <Image
+            src="/images/Google ad.png"
+            alt="Analytics dashboard ad creative"
+            fill
+            sizes="264px"
+            className="object-cover"
+          />
+        </div>
+
+        <div className="bg-white px-0 py-4">
+          <div className="space-y-[11px]">
+            <div className="space-y-[5px]">
+              {isHeadlineLoading ? (
+                <div className="skeleton-shimmer h-4 rounded w-[136px]" aria-hidden="true" />
+              ) : (
+                <p className="text-[14px] font-semibold leading-[1.4] text-black">
+                  {headline}
+                </p>
+              )}
+
+              {isDescriptionLoading ? (
+                <div className="space-y-1" aria-hidden="true">
+                  <div className="skeleton-shimmer h-3 rounded w-full" />
+                  <div className="skeleton-shimmer h-3 rounded w-[92%]" />
+                </div>
+              ) : (
+                <p className="text-[11px] leading-[1.4] text-black">
+                  {description}
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-[12px] font-semibold leading-[1.4] text-black">Thoughtspot</p>
+              {isCtaLoading ? (
+                <div className="skeleton-shimmer h-8 w-[86px] rounded-[4px]" aria-hidden="true" />
+              ) : (
+                <button
+                  type="button"
+                  className="rounded-[4px] border border-[#215CDF] px-[11px] py-[8px] text-[12px] font-medium leading-[1.4] text-[#215CDF]"
+                >
+                  {cta}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-1 bg-[#EAEAEA]">
+        <div className="flex h-[140px] items-center justify-center bg-[#EAEAEA]">
+          <div className="flex h-[62px] w-[88px] items-center justify-center rounded-[16px] bg-white/35">
+            <Image
+              src="/images/Youtube logo.svg"
+              alt=""
+              aria-hidden="true"
+              width={88}
+              height={62}
+              className="h-[62px] w-[88px] object-contain opacity-70"
+            />
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}
+
+function GoogleAdsGmailPreview({
+  headline,
+  description,
+  cta,
+  isHeadlineLoading,
+  isDescriptionLoading,
+  isCtaLoading,
+}: {
+  headline: string
+  description: string
+  cta: string
+  isHeadlineLoading: boolean
+  isDescriptionLoading: boolean
+  isCtaLoading: boolean
+}) {
+  return (
+    <div className="rounded-[28px] border border-[#E5E5E5] bg-[#F8F8F8] p-3">
+      <div className="mb-3 flex justify-center">
+        <div className="h-1.5 w-12 rounded-full bg-[#D6D6D6]" />
+      </div>
+      <div className="mb-4 flex items-center gap-2 rounded-xl border border-[#E2E2E2] bg-white px-3 py-2">
+        <div className="flex w-3.5 flex-col gap-[2px]" aria-hidden="true">
+          <span className="h-[1.5px] rounded-full bg-[#8E8E8E]" />
+          <span className="h-[1.5px] rounded-full bg-[#8E8E8E]" />
+          <span className="h-[1.5px] rounded-full bg-[#8E8E8E]" />
+        </div>
+        <span className="flex-1 text-[11px] leading-none text-[#8E8E8E]">Search in mail</span>
+        <div className="h-6 w-6 rounded-full bg-[#D3D3D3]" aria-hidden="true" />
+      </div>
+      <div className="text-[11px] font-medium uppercase tracking-[0.02em] text-[#6B6B6B]">
+        Promotions
+      </div>
+      <div className="mt-3 rounded-2xl bg-white px-2 py-3">
+        <div className="flex items-start gap-2">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#D9D9D9] text-xs font-medium text-[#303030]">
+            T
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-start justify-between gap-2">
+              <p className="text-[10px] leading-[1.3] text-[#5E5E5E]">
+                Sponsored <span className="font-semibold text-[#121212]">· Thoughtspot</span>
+              </p>
+              <MoreVertical className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#5E5E5E]" aria-hidden="true" />
+            </div>
+            {isHeadlineLoading ? (
+              <div className="mt-1 skeleton-shimmer h-3.5 rounded w-[124px]" aria-hidden="true" />
+            ) : (
+              <p className="mt-1 text-[10px] font-medium leading-[1.3] text-[#121212]">
+                {headline}
+              </p>
+            )}
+            {isDescriptionLoading ? (
+              <div className="mt-1 space-y-1" aria-hidden="true">
+                <div className="skeleton-shimmer h-3 rounded w-full" />
+                <div className="skeleton-shimmer h-3 rounded w-[82%]" />
+              </div>
+            ) : (
+              <p className="mt-1 line-clamp-2 text-[10px] leading-[1.35] text-[#5E5E5E]">
+                {description}
+              </p>
+            )}
+            {isCtaLoading ? (
+              <div className="mt-3 skeleton-shimmer h-7 rounded-md w-[88px]" aria-hidden="true" />
+            ) : (
+              <button
+                type="button"
+                className="mt-3 rounded-md border border-[#AECBFA] bg-white px-3 py-1 text-[11px] font-medium text-[#1A73E8]"
+              >
+                {cta}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+      <div className="mt-3 space-y-4">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <div key={`gmail-placeholder-row-${index}`} className="flex items-center gap-3" aria-hidden="true">
+            <div className="h-8 w-8 shrink-0 rounded-full bg-[#DADADA]" />
+            <div className="min-w-0 flex-1 space-y-1.5">
+              <div className="h-2.5 rounded-full bg-[#DADADA]" />
+              <div className="h-2.5 w-[88%] rounded-full bg-[#DADADA]" />
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
@@ -264,7 +463,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
   const [showReferences, setShowReferences] = useState(false)
   const [contentViewType, setContentViewType] = useState<"linkedin-ads" | "landing-pages" | "google-ads">("linkedin-ads")
   const [selectedGoogleAdsSection, setSelectedGoogleAdsSection] = useState<GoogleAdsSection>("headlines")
-  const [selectedGoogleAdsTextBlockId, setSelectedGoogleAdsTextBlockId] = useState("headline-0")
+  const [selectedGoogleAdsTextBlockId, setSelectedGoogleAdsTextBlockId] = useState<GoogleAdsEditableBlockId>("headline-0")
   const [selectedGoogleAdsPlacement, setSelectedGoogleAdsPlacement] = useState<GoogleAdsPlacement>("Display")
   const [progress, setProgress] = useState(0)
   const [landingPagesCount, setLandingPagesCount] = useState(230)
@@ -298,6 +497,8 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
     "Track your sales effortlessly with our intuitive product, designed to provide real-time insights.",
     "Our sales CRM product has seen a significant boost in sales.",
   ]
+  const GOOGLE_AD_LONG_HEADLINE = "Supercharge your sales growth with innovative strategies"
+  const GOOGLE_AD_CTA = "Learn more"
   const FIGMA_LANDING_LOGO = "/images/Adobe.png"
   const FIGMA_LANDING_HERO = "/images/Flower.png"
   // Ad frames display in the same order as the checkbox list (first in list = first Ad frame)
@@ -334,6 +535,12 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
 
   // Block-level AI edit (Framed Side Pane content frame)
   const [selectedBlockId, setSelectedBlockId] = useState<EditableBlockId | null>(null)
+  const [googleAdsContent, setGoogleAdsContent] = useState({
+    headlines: [...GOOGLE_AD_HEADLINES],
+    longHeadline: GOOGLE_AD_LONG_HEADLINE,
+    descriptions: [...GOOGLE_AD_DESCRIPTIONS],
+    cta: GOOGLE_AD_CTA,
+  })
   const [editBlockContent, setEditBlockContent] = useState({
     headline: "Spending more time reacting than driving results? You're not alone.",
     body: "You're not alone. Data teams report spending less than half of their work week actually analyzing data. At CVS, ThoughtSpot helped reduce time-to-insight by 60%. With GenAI, you can finally focus on the strategic work that moves the needle.",
@@ -344,10 +551,16 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
   const [blockFadeId, setBlockFadeId] = useState<EditableBlockId | null>(null)
   /** When set, the block is streaming this text in word-by-word (after thinking). */
   const [streamingTarget, setStreamingTarget] = useState<{ blockId: EditableBlockId; text: string } | null>(null)
+  const [googleAdsThinkingId, setGoogleAdsThinkingId] = useState<GoogleAdsEditableBlockId | null>(null)
+  const [googleAdsStreamingId, setGoogleAdsStreamingId] = useState<GoogleAdsEditableBlockId | null>(null)
+  const [googleAdsFadeId, setGoogleAdsFadeId] = useState<GoogleAdsEditableBlockId | null>(null)
+  const [googleAdsStreamingTarget, setGoogleAdsStreamingTarget] = useState<{ blockId: GoogleAdsEditableBlockId; text: string } | null>(null)
   const chatInputRef = useRef<HTMLTextAreaElement>(null)
   const aiPanelRef = useRef<AIPanelHandle>(null)
   const thinkingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const fadeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const googleAdsThinkingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const googleAdsFadeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const THINKING_MS = 6000
   const FADE_MS = 300
@@ -366,6 +579,85 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
       clearTimeout(fadeTimeoutRef.current)
       fadeTimeoutRef.current = null
     }
+  }, [])
+
+  const clearGoogleAdsTimers = useCallback(() => {
+    if (googleAdsThinkingTimeoutRef.current) {
+      clearTimeout(googleAdsThinkingTimeoutRef.current)
+      googleAdsThinkingTimeoutRef.current = null
+    }
+    if (googleAdsFadeTimeoutRef.current) {
+      clearTimeout(googleAdsFadeTimeoutRef.current)
+      googleAdsFadeTimeoutRef.current = null
+    }
+  }, [])
+
+  const getMockGoogleAdsUpdate = useCallback((blockId: GoogleAdsEditableBlockId) => {
+    if (blockId === "long-headline") {
+      return "Turn more searches into revenue with AI-powered sales insights"
+    }
+
+    if (blockId === "cta") {
+      return "Get started"
+    }
+
+    if (blockId.startsWith("headline-")) {
+      const headlineUpdates = [
+        "Convert intent into pipeline",
+        "Scale revenue with AI",
+        "Shorten your sales cycle",
+        "Turn data into action",
+        "Move faster with insights",
+      ]
+      const index = Number(blockId.replace("headline-", ""))
+      return headlineUpdates[index] ?? headlineUpdates[0]
+    }
+
+    const descriptionUpdates = [
+      "Use AI insights to spot demand faster and turn high-intent searches into pipeline.",
+      "Help your team prioritize the right accounts and move from click to conversation faster.",
+      "Give sellers clear next steps with data-backed recommendations that improve conversion.",
+      "Surface real-time insights that help revenue teams act quickly and stay aligned.",
+      "Create more efficient campaigns with messaging tuned to buyer intent and performance.",
+    ]
+    const index = Number(blockId.replace("description-", ""))
+    return descriptionUpdates[index] ?? descriptionUpdates[0]
+  }, [])
+
+  const applyGoogleAdsTextUpdate = useCallback((blockId: GoogleAdsEditableBlockId, text: string) => {
+    setGoogleAdsContent((prev) => {
+      if (blockId === "long-headline") {
+        return {
+          ...prev,
+          longHeadline: text,
+        }
+      }
+
+      if (blockId === "cta") {
+        return {
+          ...prev,
+          cta: text,
+        }
+      }
+
+      if (blockId.startsWith("headline-")) {
+        const index = Number(blockId.replace("headline-", ""))
+        const headlines = [...prev.headlines]
+        headlines[index] = text
+        return {
+          ...prev,
+          headlines,
+        }
+      }
+
+      const index = Number(blockId.replace("description-", ""))
+      const descriptions = [...prev.descriptions]
+      descriptions[index] = text
+      return {
+        ...prev,
+        descriptions,
+      }
+    })
   }, [])
 
   const handleBlockSelect = useCallback((blockId: EditableBlockId) => {
@@ -408,8 +700,44 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
     [MOCK_AI_BLOCK_UPDATES, contentViewType]
   )
 
+  const handleGoogleAdsStreamingComplete = useCallback((blockId: GoogleAdsEditableBlockId) => {
+    const nextText = getMockGoogleAdsUpdate(blockId)
+
+    applyGoogleAdsTextUpdate(blockId, nextText)
+    setGoogleAdsStreamingTarget(null)
+    setGoogleAdsStreamingId(null)
+    setGoogleAdsFadeId(blockId)
+    googleAdsFadeTimeoutRef.current = setTimeout(() => {
+      googleAdsFadeTimeoutRef.current = null
+      setGoogleAdsFadeId(null)
+      const message =
+        blockId === "cta"
+          ? "Updated the Google Ads CTA to be more action-oriented."
+          : blockId === "long-headline"
+            ? "Updated the long headline to emphasize value and intent."
+            : blockId.startsWith("headline-")
+              ? "Updated the Google Ads headline for clarity and impact."
+              : "Updated the Google Ads description to be more concise and performance-focused."
+      aiPanelRef.current?.appendAIMessage(message)
+    }, FADE_MS)
+  }, [FADE_MS, applyGoogleAdsTextUpdate, getMockGoogleAdsUpdate])
+
   const handleApplyToBlock = useCallback(
     (prompt: string) => {
+      if (contentViewType === "google-ads") {
+        const blockId = selectedGoogleAdsTextBlockId
+        if (!blockId || googleAdsThinkingId || googleAdsStreamingId) return
+        clearGoogleAdsTimers()
+        setGoogleAdsThinkingId(blockId)
+        googleAdsThinkingTimeoutRef.current = setTimeout(() => {
+          googleAdsThinkingTimeoutRef.current = null
+          setGoogleAdsThinkingId(null)
+          setGoogleAdsStreamingTarget({ blockId, text: getMockGoogleAdsUpdate(blockId) })
+          setGoogleAdsStreamingId(blockId)
+        }, THINKING_MS)
+        return
+      }
+
       const blockId = selectedBlockId
       if (!blockId || blockThinkingId || blockStreamingId) return
       clearBlockTimers()
@@ -421,13 +749,34 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
         setBlockStreamingId(blockId)
       }, THINKING_MS)
     },
-    [selectedBlockId, blockThinkingId, blockStreamingId, clearBlockTimers, MOCK_AI_BLOCK_UPDATES]
+    [
+      contentViewType,
+      selectedGoogleAdsTextBlockId,
+      googleAdsThinkingId,
+      googleAdsStreamingId,
+      clearGoogleAdsTimers,
+      getMockGoogleAdsUpdate,
+      selectedBlockId,
+      blockThinkingId,
+      blockStreamingId,
+      clearBlockTimers,
+      MOCK_AI_BLOCK_UPDATES,
+    ]
   )
 
-  const handleGoogleAdsTextBlockSelect = useCallback((section: GoogleAdsSection, blockId: string) => {
+  const handleGoogleAdsTextBlockSelect = useCallback((section: GoogleAdsSection, blockId: GoogleAdsEditableBlockId) => {
     setSelectedGoogleAdsSection(section)
-    setSelectedGoogleAdsTextBlockId(blockId)
-  }, [])
+    if (googleAdsStreamingId != null) return
+    setSelectedGoogleAdsTextBlockId((prev) => {
+      if (prev === blockId) return prev
+      clearGoogleAdsTimers()
+      setGoogleAdsThinkingId(null)
+      setGoogleAdsStreamingId(null)
+      setGoogleAdsFadeId(null)
+      setGoogleAdsStreamingTarget(null)
+      return blockId
+    })
+  }, [clearGoogleAdsTimers, googleAdsStreamingId])
 
   const handleLinkedInAdEditOpen = useCallback((companyName: string) => {
     setEditModeCompanyName(companyName)
@@ -436,10 +785,11 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
   }, [])
 
   useEffect(() => {
-    if (selectedBlockId && isEditModeOpen) {
+    if (!isEditModeOpen) return
+    if ((contentViewType === "google-ads" && selectedGoogleAdsTextBlockId) || (contentViewType !== "google-ads" && selectedBlockId)) {
       chatInputRef.current?.focus()
     }
-  }, [selectedBlockId, isEditModeOpen])
+  }, [contentViewType, isEditModeOpen, selectedBlockId, selectedGoogleAdsTextBlockId])
 
   useEffect(() => {
     if (!isEditModeOpen) {
@@ -450,8 +800,15 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
       setBlockFadeId(null)
       setStreamingTarget(null)
       setLastAiEditedBlockId(null)
+      setSelectedGoogleAdsSection("headlines")
+      setSelectedGoogleAdsTextBlockId("headline-0")
+      clearGoogleAdsTimers()
+      setGoogleAdsThinkingId(null)
+      setGoogleAdsStreamingId(null)
+      setGoogleAdsFadeId(null)
+      setGoogleAdsStreamingTarget(null)
     }
-  }, [isEditModeOpen, clearBlockTimers])
+  }, [isEditModeOpen, clearBlockTimers, clearGoogleAdsTimers])
 
   useEffect(() => {
     if (contentViewType !== "linkedin-ads") {
@@ -460,6 +817,29 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
   }, [contentViewType])
 
   const isGoogleAdsEditMode = isEditModeOpen && contentViewType === "google-ads"
+  const activeAiSelectedBlockId = isEditModeOpen
+    ? contentViewType === "google-ads"
+      ? selectedGoogleAdsTextBlockId
+      : selectedBlockId
+    : null
+  const selectedGoogleAdsHeadlineIndex = selectedGoogleAdsTextBlockId.startsWith("headline-")
+    ? Number(selectedGoogleAdsTextBlockId.replace("headline-", ""))
+    : 0
+  const selectedGoogleAdsDescriptionIndex = selectedGoogleAdsTextBlockId.startsWith("description-")
+    ? Number(selectedGoogleAdsTextBlockId.replace("description-", ""))
+    : 0
+  const googleAdsPreviewHeadline = googleAdsContent.headlines[selectedGoogleAdsHeadlineIndex] ?? googleAdsContent.headlines[0]
+  const googleAdsPreviewDescription = googleAdsContent.descriptions[selectedGoogleAdsDescriptionIndex] ?? googleAdsContent.descriptions[0]
+  const activeGoogleAdsPreviewLoadingBlockId = (googleAdsThinkingId ?? googleAdsStreamingId) != null &&
+    (googleAdsThinkingId ?? googleAdsStreamingId) !== "long-headline"
+    ? (googleAdsThinkingId ?? googleAdsStreamingId)
+    : null
+  const isGoogleAdsPreviewHeadlineLoading = !!activeGoogleAdsPreviewLoadingBlockId?.startsWith("headline-")
+  const isGoogleAdsPreviewDescriptionLoading = !!activeGoogleAdsPreviewLoadingBlockId?.startsWith("description-")
+  const isGoogleAdsPreviewCtaLoading = activeGoogleAdsPreviewLoadingBlockId === "cta"
+  const isAiBlockThinking = contentViewType === "google-ads"
+    ? !!googleAdsThinkingId || !!googleAdsStreamingId || !!googleAdsFadeId
+    : !!blockThinkingId || !!blockStreamingId || !!blockFadeId
 
   /** Framed Side Pane: reference pane open width (px). Only this region's width changes. */
   const FRAMED_REFERENCE_PANE_WIDTH_PX = 524
@@ -1245,8 +1625,8 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                 <h3 className="text-sm font-semibold text-[#303030]">Headlines</h3>
                               </div>
                               <div className="space-y-4">
-                                {GOOGLE_AD_HEADLINES.map((headline, index) => (
-                                  <p key={headline} className="min-w-0 text-sm text-[#303030]">{headline}</p>
+                                {googleAdsContent.headlines.map((headline, index) => (
+                                  <p key={`google-headline-${index}`} className="min-w-0 text-sm text-[#303030]">{headline}</p>
                                 ))}
                               </div>
                             </div>
@@ -1255,7 +1635,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                               <div className="mb-3">
                                 <h3 className="text-sm font-semibold text-[#303030]">Long headline</h3>
                               </div>
-                              <p className="text-sm text-[#303030]">Supercharge your sales growth with innovative strategies</p>
+                              <p className="text-sm text-[#303030]">{googleAdsContent.longHeadline}</p>
                             </div>
 
                             <div className="rounded-xl border border-[#eaeaea] bg-white p-4">
@@ -1263,8 +1643,8 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                 <h3 className="text-sm font-semibold text-[#303030]">Descriptions</h3>
                               </div>
                               <div className="space-y-4">
-                                {GOOGLE_AD_DESCRIPTIONS.map((description, index) => (
-                                  <p key={description} className="min-w-0 text-sm leading-[1.45] text-[#303030]">{description}</p>
+                                {googleAdsContent.descriptions.map((description, index) => (
+                                  <p key={`google-description-${index}`} className="min-w-0 text-sm leading-[1.45] text-[#303030]">{description}</p>
                                 ))}
                               </div>
                             </div>
@@ -1272,7 +1652,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                             <div className="rounded-xl border border-[#E5E5E5] bg-white p-6" style={{ borderImage: "none" }}>
                               <div className="flex flex-col gap-1">
                                 <h3 className="text-sm font-semibold leading-[1.4] text-[#303030]">CTA</h3>
-                                <p className="py-1 text-sm leading-[1.4] text-[#303030]">Learn more</p>
+                                <p className="py-1 text-sm leading-[1.4] text-[#303030]">{googleAdsContent.cta}</p>
                               </div>
                             </div>
                           </div>
@@ -1326,43 +1706,65 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
 
                           <div className="flex flex-col items-center">
                             <div className="relative mx-auto w-[280px] origin-top scale-[1.2] rounded-[32px] border border-[#e5e5e5] bg-white p-4 shadow-sm">
-                              <div className="mb-4 flex items-center justify-between">
-                                <div className="space-y-1">
-                                  <div className="h-1.5 w-3 rounded-full bg-[#8E8E8E]" />
-                                  <div className="h-1 w-16 rounded-full bg-[#D9D9D9]" />
-                                </div>
-                                <SearchIcon className="h-4 w-4 text-[#8E8E8E]" />
-                              </div>
-                              <div className="space-y-2 mb-4">
-                                {Array.from({ length: 6 }).map((_, index) => (
-                                  <div key={`google-ads-line-${index}`} className="h-1.5 rounded-full bg-[#E5E5E5]" />
-                                ))}
-                              </div>
-                              <div className="rounded-2xl border border-[#E5E5E5] p-3">
-                                <div className="mb-3 h-[92px] rounded-xl bg-gradient-to-r from-[#EAF2FF] to-[#DCEBFF] p-3 flex items-end">
-                                  <div className="max-w-[150px]">
-                                    <p className="text-[10px] font-semibold uppercase tracking-wide text-[#1574D2]">Get the all-in-one CRM free for 30 days, then save 40%.</p>
-                                    <div className="mt-2 inline-flex rounded-md bg-[#1574D2] px-2 py-1 text-[9px] font-medium text-white">Try Starter free</div>
+                              {selectedGoogleAdsPlacement === "Gmail" ? (
+                                <GoogleAdsGmailPreview
+                                  headline={googleAdsContent.headlines[0]}
+                                  description={googleAdsContent.descriptions[0]}
+                                  cta={googleAdsContent.cta}
+                                  isHeadlineLoading={false}
+                                  isDescriptionLoading={false}
+                                  isCtaLoading={false}
+                                />
+                              ) : selectedGoogleAdsPlacement === "Youtube" ? (
+                                <GoogleAdsYoutubePreview
+                                  headline={googleAdsContent.headlines[0]}
+                                  description={googleAdsContent.descriptions[0]}
+                                  cta={googleAdsContent.cta}
+                                  isHeadlineLoading={false}
+                                  isDescriptionLoading={false}
+                                  isCtaLoading={false}
+                                />
+                              ) : (
+                                <>
+                                  <div className="mb-4 flex items-center justify-between">
+                                    <div className="space-y-1">
+                                      <div className="h-1.5 w-3 rounded-full bg-[#8E8E8E]" />
+                                      <div className="h-1 w-16 rounded-full bg-[#D9D9D9]" />
+                                    </div>
+                                    <SearchIcon className="h-4 w-4 text-[#8E8E8E]" />
                                   </div>
-                                </div>
-                                <div className="flex items-start gap-2">
-                                  <div className="mt-1 h-5 w-5 rounded-full bg-[#1A73E8]" />
-                                  <div className="min-w-0">
-                                    <p className="text-xs font-semibold text-[#121212]">Accelerate sales growth</p>
-                                    <p className="mt-1 text-[11px] leading-[1.35] text-[#5E5E5E]">
-                                      Unlock rapid growth with analytics product! Our customers have seen a 30% increase in efficiency.
-                                    </p>
-                                    <button type="button" className="mt-3 rounded-md border border-[#AECBFA] px-3 py-1 text-[11px] font-medium text-[#1A73E8]">
-                                      Learn more
-                                    </button>
+                                  <div className="space-y-2 mb-4">
+                                    {Array.from({ length: 6 }).map((_, index) => (
+                                      <div key={`google-ads-line-${index}`} className="h-1.5 rounded-full bg-[#E5E5E5]" />
+                                    ))}
                                   </div>
-                                </div>
-                              </div>
-                              <div className="mt-4 space-y-2">
-                                {Array.from({ length: 4 }).map((_, index) => (
-                                  <div key={`google-ads-bottom-line-${index}`} className="h-1.5 rounded-full bg-[#EAEAEA]" />
-                                ))}
-                              </div>
+                                  <div className="rounded-2xl border border-[#E5E5E5] p-3">
+                                    <div className="mb-3 h-[92px] rounded-xl bg-gradient-to-r from-[#EAF2FF] to-[#DCEBFF] p-3 flex items-end">
+                                      <div className="max-w-[150px]">
+                                        <p className="text-[10px] font-semibold uppercase tracking-wide text-[#1574D2]">Get the all-in-one CRM free for 30 days, then save 40%.</p>
+                                        <div className="mt-2 inline-flex rounded-md bg-[#1574D2] px-2 py-1 text-[9px] font-medium text-white">Try Starter free</div>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-start gap-2">
+                                      <div className="mt-1 h-5 w-5 rounded-full bg-[#1A73E8]" />
+                                      <div className="min-w-0">
+                                        <p className="text-xs font-semibold text-[#121212]">{googleAdsContent.headlines[0]}</p>
+                                        <p className="mt-1 text-[11px] leading-[1.35] text-[#5E5E5E]">
+                                          {googleAdsContent.descriptions[0]}
+                                        </p>
+                                        <button type="button" className="mt-3 rounded-md border border-[#AECBFA] px-3 py-1 text-[11px] font-medium text-[#1A73E8]">
+                                          {googleAdsContent.cta}
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="mt-4 space-y-2">
+                                    {Array.from({ length: 4 }).map((_, index) => (
+                                      <div key={`google-ads-bottom-line-${index}`} className="h-1.5 rounded-full bg-[#EAEAEA]" />
+                                    ))}
+                                  </div>
+                                </>
+                              )}
                             </div>
 
                             <CarouselDots className="mt-[120px] h-2 w-14 py-[4px]" />
@@ -2497,9 +2899,9 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                     ref={aiPanelRef}
                     mode="default"
                     className="h-full"
-                    selectedBlockId={isEditModeOpen && contentViewType !== "google-ads" ? selectedBlockId : null}
-                    isBlockThinking={contentViewType !== "google-ads" && (!!blockThinkingId || !!blockStreamingId || !!blockFadeId)}
-                    onApplyToBlock={isEditModeOpen && contentViewType !== "google-ads" ? handleApplyToBlock : undefined}
+                    selectedBlockId={activeAiSelectedBlockId}
+                    isBlockThinking={isAiBlockThinking}
+                    onApplyToBlock={isEditModeOpen ? handleApplyToBlock : undefined}
                     inputRef={chatInputRef}
                   />
                 </motion.div>
@@ -2526,9 +2928,9 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                             <h3 className="text-sm font-semibold text-[#303030]">Headlines</h3>
                           </div>
                           <div className="space-y-3">
-                            {GOOGLE_AD_HEADLINES.map((headline, index) => (
+                            {googleAdsContent.headlines.map((headline, index) => (
                               <div
-                                key={`google-edit-headline-${headline}`}
+                                key={`google-edit-headline-${index}`}
                                 className="flex w-full items-start justify-between gap-0 rounded-lg border border-transparent text-left"
                               >
                                 <div className="min-w-0 flex-1">
@@ -2537,9 +2939,11 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                     isSelectable={isEditModeOpen}
                                     showBlockToolbar={isEditModeOpen}
                                     isSelected={selectedGoogleAdsTextBlockId === `headline-${index}`}
-                                    isThinking={false}
-                                    isStreaming={false}
-                                    isFading={false}
+                                    isThinking={googleAdsThinkingId === `headline-${index}`}
+                                    isStreaming={googleAdsStreamingId === `headline-${index}`}
+                                    isFading={googleAdsFadeId === `headline-${index}`}
+                                    streamingText={googleAdsStreamingTarget?.blockId === `headline-${index}` ? googleAdsStreamingTarget.text : undefined}
+                                    onStreamingComplete={() => handleGoogleAdsStreamingComplete(`headline-${index}`)}
                                     onSelect={() => handleGoogleAdsTextBlockSelect("headlines", `headline-${index}`)}
                                     className="min-w-0 text-sm text-[#303030]"
                                   >
@@ -2560,13 +2964,15 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                             isSelectable={isEditModeOpen}
                             showBlockToolbar={isEditModeOpen}
                             isSelected={selectedGoogleAdsTextBlockId === "long-headline"}
-                            isThinking={false}
-                            isStreaming={false}
-                            isFading={false}
+                            isThinking={googleAdsThinkingId === "long-headline"}
+                            isStreaming={googleAdsStreamingId === "long-headline"}
+                            isFading={googleAdsFadeId === "long-headline"}
+                            streamingText={googleAdsStreamingTarget?.blockId === "long-headline" ? googleAdsStreamingTarget.text : undefined}
+                            onStreamingComplete={() => handleGoogleAdsStreamingComplete("long-headline")}
                             onSelect={() => handleGoogleAdsTextBlockSelect("long-headline", "long-headline")}
                             className="text-sm leading-[1.45] text-[#303030]"
                           >
-                            Supercharge your sales growth with innovative strategies
+                            {googleAdsContent.longHeadline}
                           </EditableTextBlock>
                         </div>
 
@@ -2575,7 +2981,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                             <h3 className="text-sm font-semibold text-[#303030]">Descriptions</h3>
                           </div>
                           <div className="space-y-3">
-                            {GOOGLE_AD_DESCRIPTIONS.map((description, index) => (
+                            {googleAdsContent.descriptions.map((description, index) => (
                               <div
                                 key={`google-edit-description-${index}`}
                                 className="flex w-full items-start justify-between gap-0 rounded-lg border border-transparent text-left"
@@ -2586,9 +2992,11 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                     isSelectable={isEditModeOpen}
                                     showBlockToolbar={isEditModeOpen}
                                     isSelected={selectedGoogleAdsTextBlockId === `description-${index}`}
-                                    isThinking={false}
-                                    isStreaming={false}
-                                    isFading={false}
+                                    isThinking={googleAdsThinkingId === `description-${index}`}
+                                    isStreaming={googleAdsStreamingId === `description-${index}`}
+                                    isFading={googleAdsFadeId === `description-${index}`}
+                                    streamingText={googleAdsStreamingTarget?.blockId === `description-${index}` ? googleAdsStreamingTarget.text : undefined}
+                                    onStreamingComplete={() => handleGoogleAdsStreamingComplete(`description-${index}`)}
                                     onSelect={() => handleGoogleAdsTextBlockSelect("descriptions", `description-${index}`)}
                                     className="min-w-0 text-sm leading-[1.45] text-[#303030]"
                                   >
@@ -2609,13 +3017,15 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                 isSelectable={isEditModeOpen}
                                 showBlockToolbar={isEditModeOpen}
                                 isSelected={selectedGoogleAdsTextBlockId === "cta"}
-                                isThinking={false}
-                                isStreaming={false}
-                                isFading={false}
+                                isThinking={googleAdsThinkingId === "cta"}
+                                isStreaming={googleAdsStreamingId === "cta"}
+                                isFading={googleAdsFadeId === "cta"}
+                                streamingText={googleAdsStreamingTarget?.blockId === "cta" ? googleAdsStreamingTarget.text : undefined}
+                                onStreamingComplete={() => handleGoogleAdsStreamingComplete("cta")}
                                 onSelect={() => handleGoogleAdsTextBlockSelect("cta", "cta")}
                                 className="inline-block min-w-0 text-sm leading-[1.4] text-[#303030]"
                               >
-                                Learn more
+                                {googleAdsContent.cta}
                               </EditableTextBlock>
                             </div>
                           </div>
@@ -2640,51 +3050,94 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                         />
 
                         <div className="flex flex-col items-center">
-                          <div className="relative mx-auto w-[280px] origin-top scale-[1.2] rounded-[32px] border border-[#E5E5E5] bg-white p-4 shadow-sm">
-                            <div className="mb-4 flex items-center justify-between">
-                              <div className="space-y-1">
-                                <div className="h-1.5 w-3 rounded-full bg-[#8E8E8E]" />
-                                <div className="h-1 w-16 rounded-full bg-[#D9D9D9]" />
-                              </div>
-                              <SearchIcon className="h-4 w-4 text-[#8E8E8E]" aria-hidden="true" />
-                            </div>
-                            <div className="mb-4 space-y-2">
-                              {Array.from({ length: 6 }).map((_, index) => (
-                                <div key={`google-edit-top-line-${index}`} className="h-1.5 rounded-full bg-[#E5E5E5]" />
-                              ))}
-                            </div>
-                            <div className="rounded-2xl border border-[#E5E5E5] p-3">
-                              <div className="mb-3 h-[92px] rounded-xl bg-gradient-to-r from-[#EAF2FF] to-[#DCEBFF] p-3 flex items-end">
-                                <div className="max-w-[150px]">
-                                  <p className="text-[10px] font-semibold uppercase tracking-wide text-[#1574D2]">
-                                    Get the all-in-one CRM free for 30 days, then save 40%.
-                                  </p>
-                                  <div className="mt-2 inline-flex rounded-md bg-[#1574D2] px-2 py-1 text-[9px] font-medium text-white">
-                                    Try Starter free
+                          <div className="relative mx-auto h-[479px] w-[280px] origin-top scale-[1.2] overflow-hidden rounded-[32px] border border-[#E5E5E5] bg-white p-4 shadow-sm">
+                            {selectedGoogleAdsPlacement === "Gmail" ? (
+                              <GoogleAdsGmailPreview
+                                headline={googleAdsPreviewHeadline}
+                                description={googleAdsPreviewDescription}
+                                cta={googleAdsContent.cta}
+                                isHeadlineLoading={isGoogleAdsPreviewHeadlineLoading}
+                                isDescriptionLoading={isGoogleAdsPreviewDescriptionLoading}
+                                isCtaLoading={isGoogleAdsPreviewCtaLoading}
+                              />
+                            ) : selectedGoogleAdsPlacement === "Youtube" ? (
+                              <GoogleAdsYoutubePreview
+                                headline={googleAdsPreviewHeadline}
+                                description={googleAdsPreviewDescription}
+                                cta={googleAdsContent.cta}
+                                isHeadlineLoading={isGoogleAdsPreviewHeadlineLoading}
+                                isDescriptionLoading={isGoogleAdsPreviewDescriptionLoading}
+                                isCtaLoading={isGoogleAdsPreviewCtaLoading}
+                              />
+                            ) : (
+                              <>
+                                <div className="mb-4 flex items-center justify-between">
+                                  <div className="space-y-1">
+                                    <div className="h-1.5 w-3 rounded-full bg-[#8E8E8E]" />
+                                    <div className="h-1 w-16 rounded-full bg-[#D9D9D9]" />
+                                  </div>
+                                  <SearchIcon className="h-4 w-4 text-[#8E8E8E]" aria-hidden="true" />
+                                </div>
+                                <div className="mb-4 space-y-2">
+                                  {Array.from({ length: 6 }).map((_, index) => (
+                                    <div key={`google-edit-top-line-${index}`} className="h-1.5 rounded-full bg-[#E5E5E5]" />
+                                  ))}
+                                </div>
+                                <div className="rounded-2xl border border-[#E5E5E5] p-3">
+                                  <div className="relative mb-3 h-[92px] overflow-hidden rounded-xl border border-[#E5E5E5] bg-white">
+                                    <Image
+                                      src="/images/Google ad.png"
+                                      alt="Google ad preview"
+                                      fill
+                                      sizes="264px"
+                                      className="object-cover"
+                                    />
+                                  </div>
+                                  <div className="flex items-start gap-2">
+                                    <Image
+                                      src="/images/SalesforceLogo.png"
+                                      alt="Salesforce logo"
+                                      width={32}
+                                      height={32}
+                                      className="mt-1 h-8 w-8 shrink-0 object-contain"
+                                    />
+                                    <div className="min-w-0">
+                                      {isGoogleAdsPreviewHeadlineLoading ? (
+                                        <div className="skeleton-shimmer h-3 rounded w-[168px]" aria-hidden="true" />
+                                      ) : (
+                                        <p className="text-xs font-semibold text-[#121212]">{googleAdsPreviewHeadline}</p>
+                                      )}
+                                      {isGoogleAdsPreviewDescriptionLoading ? (
+                                        <div className="mt-1 space-y-1" aria-hidden="true">
+                                          <div className="skeleton-shimmer h-3 rounded w-full" />
+                                          <div className="skeleton-shimmer h-3 rounded w-[92%]" />
+                                          <div className="skeleton-shimmer h-3 rounded w-[76%]" />
+                                        </div>
+                                      ) : (
+                                        <p className="mt-1 text-[11px] leading-[1.35] text-[#5E5E5E]">
+                                          {googleAdsPreviewDescription}
+                                        </p>
+                                      )}
+                                      {isGoogleAdsPreviewCtaLoading ? (
+                                        <div className="mt-3 skeleton-shimmer h-7 rounded-md w-[88px]" aria-hidden="true" />
+                                      ) : (
+                                        <button
+                                          type="button"
+                                          className="mt-3 rounded-md border border-[#AECBFA] px-3 py-1 text-[11px] font-medium text-[#1A73E8]"
+                                        >
+                                          {googleAdsContent.cta}
+                                        </button>
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                              <div className="flex items-start gap-2">
-                                <div className="mt-1 h-5 w-5 rounded-full bg-[#1A73E8]" />
-                                <div className="min-w-0">
-                                  <p className="text-xs font-semibold text-[#121212]">{GOOGLE_AD_HEADLINES[0]}</p>
-                                  <p className="mt-1 text-[11px] leading-[1.35] text-[#5E5E5E]">
-                                    {GOOGLE_AD_DESCRIPTIONS[0]}
-                                  </p>
-                                  <button
-                                    type="button"
-                                    className="mt-3 rounded-md border border-[#AECBFA] px-3 py-1 text-[11px] font-medium text-[#1A73E8]"
-                                  >
-                                    Learn more
-                                  </button>
+                                <div className="mt-4 space-y-2">
+                                  {Array.from({ length: 4 }).map((_, index) => (
+                                    <div key={`google-edit-bottom-line-${index}`} className="h-1.5 rounded-full bg-[#EAEAEA]" />
+                                  ))}
                                 </div>
-                              </div>
-                            </div>
-                            <div className="mt-4 space-y-2">
-                              {Array.from({ length: 4 }).map((_, index) => (
-                                <div key={`google-edit-bottom-line-${index}`} className="h-1.5 rounded-full bg-[#EAEAEA]" />
-                              ))}
-                            </div>
+                              </>
+                            )}
                           </div>
 
                           <CarouselDots className="mt-[120px] h-2 w-14 py-[4px]" />
