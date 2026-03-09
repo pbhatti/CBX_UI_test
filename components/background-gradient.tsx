@@ -437,6 +437,38 @@ function LinkedInReferenceEditedBlockSkeleton({
   )
 }
 
+function LandingPageReferenceEditedBlockSkeleton({
+  blockId,
+}: {
+  blockId: EditableBlockId
+}) {
+  if (blockId === "headline") {
+    return (
+      <div className="flex flex-col gap-3 pt-1" aria-hidden="true">
+        <div className="skeleton-shimmer h-8 rounded w-full" />
+        <div className="skeleton-shimmer h-8 rounded w-[84%]" />
+      </div>
+    )
+  }
+
+  if (blockId === "body") {
+    return (
+      <div className="flex flex-col gap-2 pt-1" aria-hidden="true">
+        <div className="skeleton-shimmer h-3.5 rounded w-full" />
+        <div className="skeleton-shimmer h-3.5 rounded w-[92%]" />
+        <div className="skeleton-shimmer h-3.5 rounded w-[74%]" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col items-center gap-3" aria-hidden="true">
+      <div className="skeleton-shimmer h-8 rounded w-56" />
+      <div className="skeleton-shimmer h-8 rounded w-44" />
+    </div>
+  )
+}
+
 export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientProps) {
   const router = useRouter()
   const words = ["Quality", "takes", "a", "moment.", "You'll", "see", "why", "..."]
@@ -474,6 +506,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
   const [isFramedPaneAnimating, setIsFramedPaneAnimating] = useState(false)
   const framedPaneTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [lastAiEditedBlockId, setLastAiEditedBlockId] = useState<EditableBlockId | null>(null)
+  const [lastAiEditedViewType, setLastAiEditedViewType] = useState<"linkedin-ads" | "landing-pages" | null>(null)
   const [referenceSyncLoadingBlockId, setReferenceSyncLoadingBlockId] = useState<EditableBlockId | null>(null)
   const referenceSyncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -679,8 +712,9 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
         ...prev,
         [blockId]: MOCK_AI_BLOCK_UPDATES[blockId],
       }))
-      if (contentViewType === "linkedin-ads") {
+      if (contentViewType === "linkedin-ads" || contentViewType === "landing-pages") {
         setLastAiEditedBlockId(blockId)
+        setLastAiEditedViewType(contentViewType)
       }
       setStreamingTarget(null)
       setBlockStreamingId(null)
@@ -800,6 +834,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
       setBlockFadeId(null)
       setStreamingTarget(null)
       setLastAiEditedBlockId(null)
+      setLastAiEditedViewType(null)
       setSelectedGoogleAdsSection("headlines")
       setSelectedGoogleAdsTextBlockId("headline-0")
       clearGoogleAdsTimers()
@@ -811,9 +846,8 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
   }, [isEditModeOpen, clearBlockTimers, clearGoogleAdsTimers])
 
   useEffect(() => {
-    if (contentViewType !== "linkedin-ads") {
-      setLastAiEditedBlockId(null)
-    }
+    setLastAiEditedBlockId(null)
+    setLastAiEditedViewType(null)
   }, [contentViewType])
 
   const isGoogleAdsEditMode = isEditModeOpen && contentViewType === "google-ads"
@@ -881,7 +915,13 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
       referenceSyncTimerRef.current = null
     }
 
-    if (showReferences && isEditModeOpen && contentViewType === "linkedin-ads" && lastAiEditedBlockId) {
+    if (
+      showReferences &&
+      isEditModeOpen &&
+      (contentViewType === "linkedin-ads" || contentViewType === "landing-pages") &&
+      lastAiEditedBlockId &&
+      lastAiEditedViewType === contentViewType
+    ) {
       setReferenceSyncLoadingBlockId(lastAiEditedBlockId)
       referenceSyncTimerRef.current = setTimeout(() => {
         referenceSyncTimerRef.current = null
@@ -897,10 +937,10 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
         referenceSyncTimerRef.current = null
       }
     }
-  }, [showReferences, isEditModeOpen, contentViewType, lastAiEditedBlockId])
+  }, [showReferences, isEditModeOpen, contentViewType, lastAiEditedBlockId, lastAiEditedViewType])
 
   const activeReferenceSyncBlockId =
-    showReferences && isEditModeOpen && contentViewType === "linkedin-ads"
+    showReferences && isEditModeOpen && (contentViewType === "linkedin-ads" || contentViewType === "landing-pages")
       ? referenceSyncLoadingBlockId
       : null
 
@@ -3430,11 +3470,12 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                             {orderedSelectedAccounts.map((companyName) => (
                               contentViewType === "landing-pages" ? (
                               <div key={companyName} className="flex-shrink-0 w-[640px] pt-6">
-                                <div className="flex items-center justify-between mb-2 w-full gap-3">
-                                  <span className="text-xs font-medium text-[#5E5E5E] shrink-0">{companyName}</span>
-                                </div>
+                                <LinkedInReferenceFrameTitle
+                                  companyName={companyName}
+                                  isLoading={activeReferenceSyncBlockId != null}
+                                />
                                 <div className="bg-white rounded-lg border border-[#eaeaea] shadow-sm h-[834px] w-full overflow-y-auto overflow-x-hidden p-6">
-                                  {!loadedReferenceFrames.has(companyName) ? (
+                                  {!loadedReferenceFrames.has(companyName) && activeReferenceSyncBlockId == null ? (
                                     <div className="flex flex-col gap-12 h-full" aria-hidden>
                                       <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-4">
@@ -3490,16 +3531,22 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                           <img src={FIGMA_LANDING_HERO} alt="Creative Cloud hero" className="w-full h-full object-cover" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                          <h4 className="text-[28px] leading-[1.2] font-semibold text-[#121212] mb-4">
-                                            Save over 40% on Creative Cloud Pro.
-                                          </h4>
-                                          <p className="text-xs leading-[1.4] text-[#303030] mb-3">
-                                            Get Photoshop, Illustrator, Premiere, Acrobat Pro, and more, plus Adobe Firefly
-                                            creative AI for images, video, and audio. New subscribers only. First year only.
-                                            <a href="https://www.adobe.com/in/offer-terms/cc_full_special_offer.html" className="underline ml-1">
-                                              See terms
-                                            </a>.
-                                          </p>
+                                          {activeReferenceSyncBlockId === "headline" ? (
+                                            <LandingPageReferenceEditedBlockSkeleton blockId="headline" />
+                                          ) : (
+                                            <h4 className="mb-4 text-[28px] font-semibold leading-[1.2] text-[#121212]">
+                                              {editBlockContent.headline}
+                                            </h4>
+                                          )}
+                                          {activeReferenceSyncBlockId === "body" ? (
+                                            <div className="mb-3">
+                                              <LandingPageReferenceEditedBlockSkeleton blockId="body" />
+                                            </div>
+                                          ) : (
+                                            <p className="mb-3 text-xs leading-[1.4] text-[#303030]">
+                                              {editBlockContent.body}
+                                            </p>
+                                          )}
                                           <p className="text-xs leading-[1.4] text-[#303030]">
                                             Work smarter and faster with the industry-standard tools pros depend on.
                                           </p>
@@ -3507,7 +3554,11 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                       </div>
                                       <div>
                                         <div className="text-center mb-8">
-                                          <h5 className="text-[28px] leading-[1.2] font-semibold text-[#121212]">Why choose Creative Cloud.</h5>
+                                          {activeReferenceSyncBlockId === "cta" ? (
+                                            <LandingPageReferenceEditedBlockSkeleton blockId="cta" />
+                                          ) : (
+                                            <h5 className="text-[28px] leading-[1.2] font-semibold text-[#121212]">{editBlockContent.cta}</h5>
+                                          )}
                                           <p className="mt-2 text-sm text-[#303030]">
                                             Membership perks include tutorials, fonts, templates and more.
                                           </p>
@@ -4186,11 +4237,12 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                           {orderedSelectedAccounts.map((companyName) => (
                               contentViewType === "landing-pages" ? (
                               <div key={companyName} className="flex-shrink-0 w-[640px] pt-12">
-                                <div className="flex items-center justify-between mb-2 w-full gap-3">
-                                  <span className="text-xs font-medium text-[#5E5E5E] shrink-0">{companyName}</span>
-                                </div>
+                                <LinkedInReferenceFrameTitle
+                                  companyName={companyName}
+                                  isLoading={activeReferenceSyncBlockId != null}
+                                />
                                 <div className="bg-white rounded-lg border border-[#eaeaea] shadow-sm h-[834px] w-full overflow-y-auto overflow-x-hidden p-6">
-                                  {!loadedReferenceFrames.has(companyName) ? (
+                                  {!loadedReferenceFrames.has(companyName) && activeReferenceSyncBlockId == null ? (
                                     <div className="flex flex-col gap-12 h-full" aria-hidden>
                                       <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-4">
@@ -4246,16 +4298,22 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                           <img src={FIGMA_LANDING_HERO} alt="Creative Cloud hero" className="w-full h-full object-cover" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                          <h4 className="text-[28px] leading-[1.2] font-semibold text-[#121212] mb-4">
-                                            Save over 40% on Creative Cloud Pro.
-                                          </h4>
-                                          <p className="text-xs leading-[1.4] text-[#303030] mb-3">
-                                            Get Photoshop, Illustrator, Premiere, Acrobat Pro, and more, plus Adobe Firefly
-                                            creative AI for images, video, and audio. New subscribers only. First year only.
-                                            <a href="https://www.adobe.com/in/offer-terms/cc_full_special_offer.html" className="underline ml-1">
-                                              See terms
-                                            </a>.
-                                          </p>
+                                          {activeReferenceSyncBlockId === "headline" ? (
+                                            <LandingPageReferenceEditedBlockSkeleton blockId="headline" />
+                                          ) : (
+                                            <h4 className="mb-4 text-[28px] font-semibold leading-[1.2] text-[#121212]">
+                                              {editBlockContent.headline}
+                                            </h4>
+                                          )}
+                                          {activeReferenceSyncBlockId === "body" ? (
+                                            <div className="mb-3">
+                                              <LandingPageReferenceEditedBlockSkeleton blockId="body" />
+                                            </div>
+                                          ) : (
+                                            <p className="mb-3 text-xs leading-[1.4] text-[#303030]">
+                                              {editBlockContent.body}
+                                            </p>
+                                          )}
                                           <p className="text-xs leading-[1.4] text-[#303030]">
                                             Work smarter and faster with the industry-standard tools pros depend on.
                                           </p>
@@ -4263,7 +4321,11 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                       </div>
                                       <div>
                                         <div className="text-center mb-8">
-                                          <h5 className="text-[28px] leading-[1.2] font-semibold text-[#121212]">Why choose Creative Cloud.</h5>
+                                          {activeReferenceSyncBlockId === "cta" ? (
+                                            <LandingPageReferenceEditedBlockSkeleton blockId="cta" />
+                                          ) : (
+                                            <h5 className="text-[28px] leading-[1.2] font-semibold text-[#121212]">{editBlockContent.cta}</h5>
+                                          )}
                                           <p className="mt-2 text-sm text-[#303030]">
                                             Membership perks include tutorials, fonts, templates and more.
                                           </p>
