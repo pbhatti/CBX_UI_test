@@ -1828,21 +1828,36 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                               <div>
                                 <div className="text-center mb-8">
                                   <h5 className="text-[28px] leading-[1.2] font-semibold text-[#121212]">Why choose Creative Cloud.</h5>
-                                  <p className="mt-4 text-sm text-[#303030]">
+                                  <p className="mt-2 text-sm text-[#303030]">
                                     Membership perks include tutorials, fonts, templates and more.
                                   </p>
                                 </div>
                                 <div className="grid grid-cols-3 gap-x-6 gap-y-8">
                                   {[
-                                    { icon: "🏅", title: "A complete creative ecosystem", body: "Find every app you need for photo, design, video and more." },
-                                    { icon: "🎁", title: "30,000+ professional fonts", body: "Find the perfect type for any project with Adobe Fonts." },
-                                    { icon: "💎", title: "A complete creative ecosystem", body: "Meet any deadline with Adobe Stock and free creative assets." },
-                                    { icon: "🎬", title: "30,000+ professional fonts", body: "Create standout video with templates and premium assets." },
-                                    { icon: "🚀", title: "A complete creative ecosystem", body: "Move from concept to production without switching tools." },
-                                    { icon: "🎮", title: "A complete creative ecosystem", body: "Build polished projects faster with production-ready content." },
+                                    { icon: "🏅", iconSrc: "/images/ic_madel.svg", title: "A complete creative ecosystem", body: "Find every app you need for photo, design, video and more." },
+                                    { icon: "🎁", iconSrc: "/images/ic_collection.svg", title: "30,000+ professional fonts", body: "Find the perfect type for any project with Adobe Fonts." },
+                                    { icon: "💎", iconSrc: "/images/ic_gem.svg", title: "A complete creative ecosystem", body: "Meet any deadline with Adobe Stock and free creative assets." },
+                                    { icon: "🎬", iconSrc: "/images/ic_movie.png", title: "30,000+ professional fonts", body: "Create standout video with templates and premium assets." },
+                                    { icon: "🚀", iconSrc: "/images/ic_rocket.svg", title: "A complete creative ecosystem", body: "Move from concept to production without switching tools." },
+                                    { icon: "🎮", iconSrc: "/images/ic_game.svg", title: "A complete creative ecosystem", body: "Build polished projects faster with production-ready content." },
                                   ].map((item) => (
                                     <div key={`${companyName}-${item.title}-${item.icon}`} className="text-center">
-                                      <div className="text-4xl mb-2">{item.icon}</div>
+                                      <div className="mb-2 flex h-10 w-10 items-center justify-center mx-auto shrink-0">
+                                        {item.iconSrc ? (
+                                          <Image
+                                            src={item.iconSrc}
+                                            alt=""
+                                            aria-hidden="true"
+                                            width={40}
+                                            height={40}
+                                            className="h-10 w-10 object-contain"
+                                          />
+                                        ) : (
+                                          <span aria-hidden="true" className="text-4xl leading-none">
+                                            {item.icon}
+                                          </span>
+                                        )}
+                                      </div>
                                       <p className="text-sm leading-[1.4] font-semibold text-[#303030] mb-2">{item.title}</p>
                                       <p className="text-xs leading-[1.4] text-[#303030]">{item.body}</p>
                                     </div>
@@ -3243,21 +3258,36 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                               >
                                 Why choose Creative Cloud.
                               </EditableTextBlock>
-                              <p className="mt-4 text-sm text-[#303030]">
+                              <p className="mt-2 text-sm text-[#303030]">
                                 Membership perks include tutorials, fonts, templates and more.
                               </p>
                             </div>
                             <div className="grid grid-cols-3 gap-x-6 gap-y-8">
                               {[
-                                { icon: "🏅", title: "A complete creative ecosystem", body: "Find every app you need for photo, design, video and more." },
-                                { icon: "🎁", title: "30,000+ professional fonts", body: "Find the perfect type for any project with Adobe Fonts." },
-                                { icon: "💎", title: "A complete creative ecosystem", body: "Meet any deadline with Adobe Stock and free creative assets." },
-                                { icon: "🎬", title: "30,000+ professional fonts", body: "Create standout video with templates and premium assets." },
-                                { icon: "🚀", title: "A complete creative ecosystem", body: "Move from concept to production without switching tools." },
-                                { icon: "🎮", title: "A complete creative ecosystem", body: "Build polished projects faster with production-ready content." },
+                                { icon: "🏅", iconSrc: "/images/ic_madel.svg", title: "A complete creative ecosystem", body: "Find every app you need for photo, design, video and more." },
+                                { icon: "🎁", iconSrc: "/images/ic_collection.svg", title: "30,000+ professional fonts", body: "Find the perfect type for any project with Adobe Fonts." },
+                                { icon: "💎", iconSrc: "/images/ic_gem.svg", title: "A complete creative ecosystem", body: "Meet any deadline with Adobe Stock and free creative assets." },
+                                { icon: "🎬", iconSrc: "/images/ic_movie.png", title: "30,000+ professional fonts", body: "Create standout video with templates and premium assets." },
+                                { icon: "🚀", iconSrc: "/images/ic_rocket.svg", title: "A complete creative ecosystem", body: "Move from concept to production without switching tools." },
+                                { icon: "🎮", iconSrc: "/images/ic_game.svg", title: "A complete creative ecosystem", body: "Build polished projects faster with production-ready content." },
                               ].map((item) => (
                                 <div key={`${editModeCompanyName}-${item.title}-${item.icon}`} className="text-center">
-                                  <div className="text-4xl mb-2">{item.icon}</div>
+                                  <div className="mb-2 flex h-10 w-10 items-center justify-center mx-auto shrink-0">
+                                    {item.iconSrc ? (
+                                      <Image
+                                        src={item.iconSrc}
+                                        alt=""
+                                        aria-hidden="true"
+                                        width={40}
+                                        height={40}
+                                        className="h-10 w-10 object-contain"
+                                      />
+                                    ) : (
+                                      <span aria-hidden="true" className="text-4xl leading-none">
+                                        {item.icon}
+                                      </span>
+                                    )}
+                                  </div>
                                   <p className="text-sm leading-[1.4] font-semibold text-[#303030] mb-2">{item.title}</p>
                                   <p className="text-xs leading-[1.4] text-[#303030]">{item.body}</p>
                                 </div>
@@ -3478,21 +3508,36 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                       <div>
                                         <div className="text-center mb-8">
                                           <h5 className="text-[28px] leading-[1.2] font-semibold text-[#121212]">Why choose Creative Cloud.</h5>
-                                          <p className="mt-4 text-sm text-[#303030]">
+                                          <p className="mt-2 text-sm text-[#303030]">
                                             Membership perks include tutorials, fonts, templates and more.
                                           </p>
                                         </div>
                                         <div className="grid grid-cols-3 gap-x-6 gap-y-8">
                                           {[
-                                            { icon: "🏅", title: "A complete creative ecosystem", body: "Find every app you need for photo, design, video and more." },
-                                            { icon: "🎁", title: "30,000+ professional fonts", body: "Find the perfect type for any project with Adobe Fonts." },
-                                            { icon: "💎", title: "A complete creative ecosystem", body: "Meet any deadline with Adobe Stock and free creative assets." },
-                                            { icon: "🎬", title: "30,000+ professional fonts", body: "Create standout video with templates and premium assets." },
-                                            { icon: "🚀", title: "A complete creative ecosystem", body: "Move from concept to production without switching tools." },
-                                            { icon: "🎮", title: "A complete creative ecosystem", body: "Build polished projects faster with production-ready content." },
+                                            { icon: "🏅", iconSrc: "/images/ic_madel.svg", title: "A complete creative ecosystem", body: "Find every app you need for photo, design, video and more." },
+                                            { icon: "🎁", iconSrc: "/images/ic_collection.svg", title: "30,000+ professional fonts", body: "Find the perfect type for any project with Adobe Fonts." },
+                                            { icon: "💎", iconSrc: "/images/ic_gem.svg", title: "A complete creative ecosystem", body: "Meet any deadline with Adobe Stock and free creative assets." },
+                                            { icon: "🎬", iconSrc: "/images/ic_movie.png", title: "30,000+ professional fonts", body: "Create standout video with templates and premium assets." },
+                                            { icon: "🚀", iconSrc: "/images/ic_rocket.svg", title: "A complete creative ecosystem", body: "Move from concept to production without switching tools." },
+                                            { icon: "🎮", iconSrc: "/images/ic_game.svg", title: "A complete creative ecosystem", body: "Build polished projects faster with production-ready content." },
                                           ].map((item) => (
                                             <div key={`${companyName}-framed-ref-${item.title}-${item.icon}`} className="text-center">
-                                              <div className="text-4xl mb-2">{item.icon}</div>
+                                              <div className="mb-2 flex h-10 w-10 items-center justify-center mx-auto shrink-0">
+                                                {item.iconSrc ? (
+                                                  <Image
+                                                    src={item.iconSrc}
+                                                    alt=""
+                                                    aria-hidden="true"
+                                                    width={40}
+                                                    height={40}
+                                                    className="h-10 w-10 object-contain"
+                                                  />
+                                                ) : (
+                                                  <span aria-hidden="true" className="text-4xl leading-none">
+                                                    {item.icon}
+                                                  </span>
+                                                )}
+                                              </div>
                                               <p className="text-sm leading-[1.4] font-semibold text-[#303030] mb-2">{item.title}</p>
                                               <p className="text-xs leading-[1.4] text-[#303030]">{item.body}</p>
                                             </div>
@@ -3804,21 +3849,36 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                               >
                                 Why choose Creative Cloud.
                               </EditableTextBlock>
-                              <p className="mt-4 text-sm text-[#303030]">
+                              <p className="mt-2 text-sm text-[#303030]">
                                 Membership perks include tutorials, fonts, templates and more.
                               </p>
                             </div>
                             <div className="grid grid-cols-3 gap-x-6 gap-y-8">
                               {[
-                                { icon: "🏅", title: "A complete creative ecosystem", body: "Find every app you need for photo, design, video and more." },
-                                { icon: "🎁", title: "30,000+ professional fonts", body: "Find the perfect type for any project with Adobe Fonts." },
-                                { icon: "💎", title: "A complete creative ecosystem", body: "Meet any deadline with Adobe Stock and free creative assets." },
-                                { icon: "🎬", title: "30,000+ professional fonts", body: "Create standout video with templates and premium assets." },
-                                { icon: "🚀", title: "A complete creative ecosystem", body: "Move from concept to production without switching tools." },
-                                { icon: "🎮", title: "A complete creative ecosystem", body: "Build polished projects faster with production-ready content." },
+                                { icon: "🏅", iconSrc: "/images/ic_madel.svg", title: "A complete creative ecosystem", body: "Find every app you need for photo, design, video and more." },
+                                { icon: "🎁", iconSrc: "/images/ic_collection.svg", title: "30,000+ professional fonts", body: "Find the perfect type for any project with Adobe Fonts." },
+                                { icon: "💎", iconSrc: "/images/ic_gem.svg", title: "A complete creative ecosystem", body: "Meet any deadline with Adobe Stock and free creative assets." },
+                                { icon: "🎬", iconSrc: "/images/ic_movie.png", title: "30,000+ professional fonts", body: "Create standout video with templates and premium assets." },
+                                { icon: "🚀", iconSrc: "/images/ic_rocket.svg", title: "A complete creative ecosystem", body: "Move from concept to production without switching tools." },
+                                { icon: "🎮", iconSrc: "/images/ic_game.svg", title: "A complete creative ecosystem", body: "Build polished projects faster with production-ready content." },
                               ].map((item) => (
                                 <div key={`${editModeCompanyName}-inline-${item.title}-${item.icon}`} className="text-center">
-                                  <div className="text-4xl mb-2">{item.icon}</div>
+                                  <div className="mb-2 flex h-10 w-10 items-center justify-center mx-auto shrink-0">
+                                    {item.iconSrc ? (
+                                      <Image
+                                        src={item.iconSrc}
+                                        alt=""
+                                        aria-hidden="true"
+                                        width={40}
+                                        height={40}
+                                        className="h-10 w-10 object-contain"
+                                      />
+                                    ) : (
+                                      <span aria-hidden="true" className="text-4xl leading-none">
+                                        {item.icon}
+                                      </span>
+                                    )}
+                                  </div>
                                   <p className="text-sm leading-[1.4] font-semibold text-[#303030] mb-2">{item.title}</p>
                                   <p className="text-xs leading-[1.4] text-[#303030]">{item.body}</p>
                                 </div>
@@ -4204,21 +4264,36 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                       <div>
                                         <div className="text-center mb-8">
                                           <h5 className="text-[28px] leading-[1.2] font-semibold text-[#121212]">Why choose Creative Cloud.</h5>
-                                          <p className="mt-4 text-sm text-[#303030]">
+                                          <p className="mt-2 text-sm text-[#303030]">
                                             Membership perks include tutorials, fonts, templates and more.
                                           </p>
                                         </div>
                                         <div className="grid grid-cols-3 gap-x-6 gap-y-8">
                                           {[
-                                            { icon: "🏅", title: "A complete creative ecosystem", body: "Find every app you need for photo, design, video and more." },
-                                            { icon: "🎁", title: "30,000+ professional fonts", body: "Find the perfect type for any project with Adobe Fonts." },
-                                            { icon: "💎", title: "A complete creative ecosystem", body: "Meet any deadline with Adobe Stock and free creative assets." },
-                                            { icon: "🎬", title: "30,000+ professional fonts", body: "Create standout video with templates and premium assets." },
-                                            { icon: "🚀", title: "A complete creative ecosystem", body: "Move from concept to production without switching tools." },
-                                            { icon: "🎮", title: "A complete creative ecosystem", body: "Build polished projects faster with production-ready content." },
+                                            { icon: "🏅", iconSrc: "/images/ic_madel.svg", title: "A complete creative ecosystem", body: "Find every app you need for photo, design, video and more." },
+                                            { icon: "🎁", iconSrc: "/images/ic_collection.svg", title: "30,000+ professional fonts", body: "Find the perfect type for any project with Adobe Fonts." },
+                                            { icon: "💎", iconSrc: "/images/ic_gem.svg", title: "A complete creative ecosystem", body: "Meet any deadline with Adobe Stock and free creative assets." },
+                                            { icon: "🎬", iconSrc: "/images/ic_movie.png", title: "30,000+ professional fonts", body: "Create standout video with templates and premium assets." },
+                                            { icon: "🚀", iconSrc: "/images/ic_rocket.svg", title: "A complete creative ecosystem", body: "Move from concept to production without switching tools." },
+                                            { icon: "🎮", iconSrc: "/images/ic_game.svg", title: "A complete creative ecosystem", body: "Build polished projects faster with production-ready content." },
                                           ].map((item) => (
                                             <div key={`${companyName}-inline-ref-${item.title}-${item.icon}`} className="text-center">
-                                              <div className="text-4xl mb-2">{item.icon}</div>
+                                              <div className="mb-2 flex h-10 w-10 items-center justify-center mx-auto shrink-0">
+                                                {item.iconSrc ? (
+                                                  <Image
+                                                    src={item.iconSrc}
+                                                    alt=""
+                                                    aria-hidden="true"
+                                                    width={40}
+                                                    height={40}
+                                                    className="h-10 w-10 object-contain"
+                                                  />
+                                                ) : (
+                                                  <span aria-hidden="true" className="text-4xl leading-none">
+                                                    {item.icon}
+                                                  </span>
+                                                )}
+                                              </div>
                                               <p className="text-sm leading-[1.4] font-semibold text-[#303030] mb-2">{item.title}</p>
                                               <p className="text-xs leading-[1.4] text-[#303030]">{item.body}</p>
                                             </div>
