@@ -140,7 +140,7 @@ export const AIPanel = forwardRef<AIPanelHandle, AIPanelProps>(function AIPanel(
       className={`ai-panel flex flex-col h-full bg-[#F8F8F8] border-l border-[#e5e5e5] ${className ?? ""}`}
       style={{ width: AI_PANEL_WIDTH, minWidth: AI_PANEL_WIDTH }}
     >
-      <AIHeader title="AI Assistant" isCompact={mode === "compact"} />
+      <AIHeader title="Chat" isCompact={mode === "compact"} showActions={mode === "default"} />
       <MessageList
         messages={messages}
         mode={mode}
