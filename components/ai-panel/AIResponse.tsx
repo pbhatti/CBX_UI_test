@@ -1,8 +1,5 @@
 "use client"
 
-import { AppIcon } from "@/components/ui/icon"
-import { Bot } from "lucide-react"
-
 export interface AIResponseProps {
   text: string
   status?: "thinking"
@@ -13,10 +10,14 @@ export function AIResponse({ text, status }: AIResponseProps) {
 
   return (
     <div className="flex gap-3 w-full">
-      <div className="w-8 h-8 flex items-center justify-center shrink-0 rounded-full bg-[#eaeaea]">
-        <AppIcon size="sm">
-          <Bot className="w-4 h-4 text-[#505050]" />
-        </AppIcon>
+      <div className="w-6 h-6 flex items-center justify-center shrink-0">
+        <img
+          src="/images/differentLogo.svg"
+          alt=""
+          width={24}
+          height={24}
+          className="w-6 h-6 object-contain"
+        />
       </div>
       <div className="flex-1 min-w-0">
         {isThinking ? (

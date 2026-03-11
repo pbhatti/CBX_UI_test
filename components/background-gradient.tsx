@@ -980,7 +980,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-        className="fixed inset-0 z-50 overflow-hidden"
+        className="fixed inset-0 z-50 overflow-hidden bg-[#eaeaea]"
       >
       {/* Topbar - 64px height */}
       <div className="absolute top-0 left-0 right-0 h-16 bg-white border-b border-[#eaeaea] flex items-center justify-between px-6 z-10">
@@ -1622,12 +1622,14 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
           {showReviewMode && (
             <motion.div
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              animate={{
+                opacity: 1,
+                left: isContentViewPanelCollapsed ? 0 : 320,
+              }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-              className="absolute bg-[#F6F6F6]"
+              className="absolute z-0 bg-[#F6F6F6]"
               style={{
-                left: isContentViewPanelCollapsed ? 0 : 320,
                 top: 64,
                 right: 0,
                 bottom: 0,
