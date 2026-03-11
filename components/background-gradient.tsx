@@ -30,7 +30,7 @@ type GoogleAdsSection = "headlines" | "long-headline" | "descriptions" | "cta"
 type GoogleAdsPlacement = "Display" | "Gmail" | "Youtube"
 type GoogleAdsEditableBlockId = `headline-${number}` | "long-headline" | `description-${number}` | "cta"
 
-const LINKEDIN_REFERENCE_SYNC_MS = 6000
+const LINKEDIN_REFERENCE_SYNC_MS = 4000
 
 const GOOGLE_AD_PLACEMENT_OPTIONS: Array<{
   label: GoogleAdsPlacement
@@ -410,7 +410,7 @@ function LinkedInReferenceEditedBlockSkeleton({
   if (blockId === "cta") {
     return (
       <div className="p-1" aria-hidden="true">
-        <div className="skeleton-shimmer h-3.5 rounded w-[204px]" />
+        <div className="aiThinking h-3.5 rounded w-[204px] overflow-hidden" />
       </div>
     )
   }
@@ -418,21 +418,21 @@ function LinkedInReferenceEditedBlockSkeleton({
   if (blockId === "body") {
     return (
       <div className="flex flex-col gap-2 p-1" aria-hidden="true">
-        <div className="skeleton-shimmer h-3.5 rounded w-full" />
-        <div className="skeleton-shimmer h-3.5 rounded w-full" />
-        <div className="skeleton-shimmer h-3.5 rounded w-[92%]" />
-        <div className="skeleton-shimmer h-3.5 rounded w-[84%]" />
-        <div className="skeleton-shimmer h-3.5 rounded w-full" />
-        <div className="skeleton-shimmer h-3.5 rounded w-[72%]" />
+        <div className="aiThinking h-3.5 rounded w-full overflow-hidden" />
+        <div className="aiThinking h-3.5 rounded w-full overflow-hidden" />
+        <div className="aiThinking h-3.5 rounded w-[92%] overflow-hidden" />
+        <div className="aiThinking h-3.5 rounded w-[84%] overflow-hidden" />
+        <div className="aiThinking h-3.5 rounded w-full overflow-hidden" />
+        <div className="aiThinking h-3.5 rounded w-[72%] overflow-hidden" />
       </div>
     )
   }
 
   return (
     <div className="flex flex-col gap-1 p-1" aria-hidden="true">
-      <div className="skeleton-shimmer h-3 rounded w-full" />
-      <div className="skeleton-shimmer h-3 rounded w-full" />
-      <div className="skeleton-shimmer h-3 rounded w-[204px]" />
+      <div className="aiThinking h-3 rounded w-full overflow-hidden" />
+      <div className="aiThinking h-3 rounded w-full overflow-hidden" />
+      <div className="aiThinking h-3 rounded w-[204px] overflow-hidden" />
     </div>
   )
 }
@@ -445,8 +445,8 @@ function LandingPageReferenceEditedBlockSkeleton({
   if (blockId === "headline") {
     return (
       <div className="flex flex-col gap-3 pt-1" aria-hidden="true">
-        <div className="skeleton-shimmer h-8 rounded w-full" />
-        <div className="skeleton-shimmer h-8 rounded w-[84%]" />
+        <div className="aiThinking h-8 rounded w-full overflow-hidden" />
+        <div className="aiThinking h-8 rounded w-[84%] overflow-hidden" />
       </div>
     )
   }
@@ -454,17 +454,17 @@ function LandingPageReferenceEditedBlockSkeleton({
   if (blockId === "body") {
     return (
       <div className="flex flex-col gap-2 pt-1" aria-hidden="true">
-        <div className="skeleton-shimmer h-3.5 rounded w-full" />
-        <div className="skeleton-shimmer h-3.5 rounded w-[92%]" />
-        <div className="skeleton-shimmer h-3.5 rounded w-[74%]" />
+        <div className="aiThinking h-3.5 rounded w-full overflow-hidden" />
+        <div className="aiThinking h-3.5 rounded w-[92%] overflow-hidden" />
+        <div className="aiThinking h-3.5 rounded w-[74%] overflow-hidden" />
       </div>
     )
   }
 
   return (
     <div className="flex flex-col items-center gap-3" aria-hidden="true">
-      <div className="skeleton-shimmer h-8 rounded w-56" />
-      <div className="skeleton-shimmer h-8 rounded w-44" />
+      <div className="aiThinking h-8 rounded w-56 overflow-hidden" />
+      <div className="aiThinking h-8 rounded w-44 overflow-hidden" />
     </div>
   )
 }
@@ -509,6 +509,19 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
   const [lastAiEditedViewType, setLastAiEditedViewType] = useState<"linkedin-ads" | "landing-pages" | null>(null)
   const [referenceSyncLoadingBlockId, setReferenceSyncLoadingBlockId] = useState<EditableBlockId | null>(null)
   const referenceSyncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  /** Reference frame content - only updated when ref sync animation completes or pane opens without recent edit */
+  const [refFrameBlockContent, setRefFrameBlockContent] = useState({
+    headline: "Spending more time reacting than driving results? You're not alone.",
+    body: "You're not alone. Data teams report spending less than half of their work week actually analyzing data. At CVS, ThoughtSpot helped reduce time-to-insight by 60%. With GenAI, you can finally focus on the strategic work that moves the needle.",
+    cta: "See how to reclaim control of your career. Download the Dashboards are Dead, Gen AI edition.",
+  })
+  const [refSyncThinkingBlockId, setRefSyncThinkingBlockId] = useState<EditableBlockId | null>(null)
+  const [refSyncStreamingBlockId, setRefSyncStreamingBlockId] = useState<EditableBlockId | null>(null)
+  const [refSyncFadeBlockId, setRefSyncFadeBlockId] = useState<EditableBlockId | null>(null)
+  const [refSyncStreamingTarget, setRefSyncStreamingTarget] = useState<{ blockId: EditableBlockId; text: string } | null>(null)
+  const refSyncThinkingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const refSyncFadeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const REF_SYNC_THINKING_MS = 4000
 
   // Select references popover (Figma: Personalisation by)
   const [selectedPersona, setSelectedPersona] = useState("data-leader")
@@ -595,7 +608,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
   const googleAdsThinkingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const googleAdsFadeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const THINKING_MS = 6000
+  const THINKING_MS = 3000
   const FADE_MS = 300
   const MOCK_AI_BLOCK_UPDATES = useRef<Record<EditableBlockId, string>>({
     headline: "Drive results, not reactions. You're not alone.",
@@ -734,6 +747,20 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
     [MOCK_AI_BLOCK_UPDATES, contentViewType]
   )
 
+  const handleRefSyncStreamingComplete = useCallback((blockId: EditableBlockId) => {
+    setRefFrameBlockContent((prev) => ({
+      ...prev,
+      [blockId]: editBlockContent[blockId],
+    }))
+    setRefSyncStreamingTarget(null)
+    setRefSyncStreamingBlockId(null)
+    setRefSyncFadeBlockId(blockId)
+    refSyncFadeTimeoutRef.current = setTimeout(() => {
+      refSyncFadeTimeoutRef.current = null
+      setRefSyncFadeBlockId(null)
+    }, FADE_MS)
+  }, [editBlockContent])
+
   const handleGoogleAdsStreamingComplete = useCallback((blockId: GoogleAdsEditableBlockId) => {
     const nextText = getMockGoogleAdsUpdate(blockId)
 
@@ -758,6 +785,9 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
 
   const handleApplyToBlock = useCallback(
     (prompt: string) => {
+      if (contentViewType === "linkedin-ads" || contentViewType === "landing-pages") {
+        setRefFrameBlockContent((prev) => ({ ...prev, ...editBlockContent }))
+      }
       if (contentViewType === "google-ads") {
         const blockId = selectedGoogleAdsTextBlockId
         if (!blockId || googleAdsThinkingId || googleAdsStreamingId) return
@@ -785,6 +815,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
     },
     [
       contentViewType,
+      editBlockContent,
       selectedGoogleAdsTextBlockId,
       googleAdsThinkingId,
       googleAdsStreamingId,
@@ -914,6 +945,14 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
       clearTimeout(referenceSyncTimerRef.current)
       referenceSyncTimerRef.current = null
     }
+    if (refSyncThinkingTimeoutRef.current) {
+      clearTimeout(refSyncThinkingTimeoutRef.current)
+      refSyncThinkingTimeoutRef.current = null
+    }
+    if (refSyncFadeTimeoutRef.current) {
+      clearTimeout(refSyncFadeTimeoutRef.current)
+      refSyncFadeTimeoutRef.current = null
+    }
 
     if (
       showReferences &&
@@ -923,12 +962,23 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
       lastAiEditedViewType === contentViewType
     ) {
       setReferenceSyncLoadingBlockId(lastAiEditedBlockId)
+      setRefSyncThinkingBlockId(lastAiEditedBlockId)
+      refSyncThinkingTimeoutRef.current = setTimeout(() => {
+        refSyncThinkingTimeoutRef.current = null
+        setRefSyncThinkingBlockId(null)
+        setRefSyncStreamingTarget({ blockId: lastAiEditedBlockId, text: editBlockContent[lastAiEditedBlockId] })
+        setRefSyncStreamingBlockId(lastAiEditedBlockId)
+      }, REF_SYNC_THINKING_MS)
       referenceSyncTimerRef.current = setTimeout(() => {
         referenceSyncTimerRef.current = null
         setReferenceSyncLoadingBlockId(null)
       }, LINKEDIN_REFERENCE_SYNC_MS)
     } else {
       setReferenceSyncLoadingBlockId(null)
+      setRefSyncThinkingBlockId(null)
+      setRefSyncStreamingBlockId(null)
+      setRefSyncFadeBlockId(null)
+      setRefSyncStreamingTarget(null)
     }
 
     return () => {
@@ -936,8 +986,28 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
         clearTimeout(referenceSyncTimerRef.current)
         referenceSyncTimerRef.current = null
       }
+      if (refSyncThinkingTimeoutRef.current) {
+        clearTimeout(refSyncThinkingTimeoutRef.current)
+        refSyncThinkingTimeoutRef.current = null
+      }
+      if (refSyncFadeTimeoutRef.current) {
+        clearTimeout(refSyncFadeTimeoutRef.current)
+        refSyncFadeTimeoutRef.current = null
+      }
     }
-  }, [showReferences, isEditModeOpen, contentViewType, lastAiEditedBlockId, lastAiEditedViewType])
+  }, [showReferences, isEditModeOpen, contentViewType, lastAiEditedBlockId, lastAiEditedViewType, editBlockContent])
+
+  useEffect(() => {
+    if (
+      showReferences &&
+      isEditModeOpen &&
+      (contentViewType === "linkedin-ads" || contentViewType === "landing-pages") &&
+      !lastAiEditedBlockId &&
+      !referenceSyncLoadingBlockId
+    ) {
+      setRefFrameBlockContent((prev) => ({ ...prev, ...editBlockContent }))
+    }
+  }, [showReferences, isEditModeOpen, contentViewType, lastAiEditedBlockId, referenceSyncLoadingBlockId, editBlockContent])
 
   const activeReferenceSyncBlockId =
     showReferences && isEditModeOpen && (contentViewType === "linkedin-ads" || contentViewType === "landing-pages")
@@ -3533,22 +3603,40 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                           <img src={FIGMA_LANDING_HERO} alt="Creative Cloud hero" className="w-full h-full object-cover" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                          {activeReferenceSyncBlockId === "headline" ? (
-                                            <LandingPageReferenceEditedBlockSkeleton blockId="headline" />
-                                          ) : (
-                                            <h4 className="mb-4 text-[28px] font-semibold leading-[1.2] text-[#121212]">
-                                              {editBlockContent.headline}
-                                            </h4>
-                                          )}
-                                          {activeReferenceSyncBlockId === "body" ? (
-                                            <div className="mb-3">
-                                              <LandingPageReferenceEditedBlockSkeleton blockId="body" />
-                                            </div>
-                                          ) : (
-                                            <p className="mb-3 text-xs leading-[1.4] text-[#303030]">
-                                              {editBlockContent.body}
-                                            </p>
-                                          )}
+                                          <div className="mb-4">
+                                            <EditableTextBlock
+                                              blockId="headline"
+                                              isSelectable={false}
+                                              showBlockToolbar={false}
+                                              isSelected={false}
+                                              isThinking={refSyncThinkingBlockId === "headline"}
+                                              isStreaming={refSyncStreamingBlockId === "headline"}
+                                              isFading={refSyncFadeBlockId === "headline"}
+                                              streamingText={refSyncStreamingTarget?.blockId === "headline" ? refSyncStreamingTarget.text : undefined}
+                                              onStreamingComplete={() => handleRefSyncStreamingComplete("headline")}
+                                              onSelect={() => {}}
+                                              className="text-[28px] font-semibold leading-[1.2] text-[#121212]"
+                                            >
+                                              {refFrameBlockContent.headline}
+                                            </EditableTextBlock>
+                                          </div>
+                                          <div className="mb-3">
+                                            <EditableTextBlock
+                                              blockId="body"
+                                              isSelectable={false}
+                                              showBlockToolbar={false}
+                                              isSelected={false}
+                                              isThinking={refSyncThinkingBlockId === "body"}
+                                              isStreaming={refSyncStreamingBlockId === "body"}
+                                              isFading={refSyncFadeBlockId === "body"}
+                                              streamingText={refSyncStreamingTarget?.blockId === "body" ? refSyncStreamingTarget.text : undefined}
+                                              onStreamingComplete={() => handleRefSyncStreamingComplete("body")}
+                                              onSelect={() => {}}
+                                              className="text-xs leading-[1.4] text-[#303030]"
+                                            >
+                                              {refFrameBlockContent.body}
+                                            </EditableTextBlock>
+                                          </div>
                                           <p className="text-xs leading-[1.4] text-[#303030]">
                                             Work smarter and faster with the industry-standard tools pros depend on.
                                           </p>
@@ -3556,11 +3644,21 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                       </div>
                                       <div>
                                         <div className="text-center mb-8">
-                                          {activeReferenceSyncBlockId === "cta" ? (
-                                            <LandingPageReferenceEditedBlockSkeleton blockId="cta" />
-                                          ) : (
-                                            <h5 className="text-[28px] leading-[1.2] font-semibold text-[#121212]">{editBlockContent.cta}</h5>
-                                          )}
+                                          <EditableTextBlock
+                                            blockId="cta"
+                                            isSelectable={false}
+                                            showBlockToolbar={false}
+                                            isSelected={false}
+                                            isThinking={refSyncThinkingBlockId === "cta"}
+                                            isStreaming={refSyncStreamingBlockId === "cta"}
+                                            isFading={refSyncFadeBlockId === "cta"}
+                                            streamingText={refSyncStreamingTarget?.blockId === "cta" ? refSyncStreamingTarget.text : undefined}
+                                            onStreamingComplete={() => handleRefSyncStreamingComplete("cta")}
+                                            onSelect={() => {}}
+                                            className="text-[28px] leading-[1.2] font-semibold text-[#121212] block"
+                                          >
+                                            {refFrameBlockContent.cta}
+                                          </EditableTextBlock>
                                           <p className="mt-2 text-sm text-[#303030]">
                                             Membership perks include tutorials, fonts, templates and more.
                                           </p>
@@ -3609,7 +3707,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                 />
                                 <div className="bg-white rounded-lg border border-[#eaeaea] shadow-sm h-[675px] flex flex-col min-h-0 w-full overflow-hidden">
                                   {!loadedReferenceFrames.has(companyName) && activeReferenceSyncBlockId == null ? (
-                                    /* Skeleton loader - Figma 2514:59960, #F6F6F6 */
+                                    /* Skeleton loader - Figma 2514:59960, #F6F6F6 - account selection load */
                                     <div className="flex flex-col h-full">
                                       <div className="p-4 flex flex-col gap-4 flex-shrink-0">
                                         <div className="flex gap-6 items-start">
@@ -3668,65 +3766,53 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                         </DropdownMenuContent>
                                       </DropdownMenu>
                                     </div>
-                                    {/* Ad Copy */}
+                                    {/* Ad Copy - ref frame: uses ref sync animation when pane opens after edit */}
                                     <div className="space-y-2">
-                                      {activeReferenceSyncBlockId === "headline" ? (
-                                        <LinkedInReferenceEditedBlockSkeleton blockId="headline" />
-                                      ) : (
-                                        <EditableTextBlock
-                                          blockId="headline"
-                                          isSelectable={false}
-                                          showBlockToolbar={isEditModeOpen}
-                                          isSelected={false}
-                                          isThinking={blockThinkingId === "headline"}
-                                          isStreaming={blockStreamingId === "headline"}
-                                          isFading={blockFadeId === "headline"}
-                                          streamingText={streamingTarget?.blockId === "headline" ? streamingTarget.text : undefined}
-                                          onStreamingComplete={() => handleStreamingComplete("headline")}
-                                          onSelect={() => {}}
-                                          className="text-sm text-[#121212] font-medium"
-                                        >
-                                          {editBlockContent.headline}
-                                        </EditableTextBlock>
-                                      )}
-                                      {activeReferenceSyncBlockId === "body" ? (
-                                        <LinkedInReferenceEditedBlockSkeleton blockId="body" />
-                                      ) : (
-                                        <EditableTextBlock
-                                          blockId="body"
-                                          isSelectable={false}
-                                          showBlockToolbar={isEditModeOpen}
-                                          isSelected={false}
-                                          isThinking={blockThinkingId === "body"}
-                                          isStreaming={blockStreamingId === "body"}
-                                          isFading={blockFadeId === "body"}
-                                          streamingText={streamingTarget?.blockId === "body" ? streamingTarget.text : undefined}
-                                          onStreamingComplete={() => handleStreamingComplete("body")}
-                                          onSelect={() => {}}
-                                          className="text-sm text-[#121212]"
-                                        >
-                                          {editBlockContent.body}
-                                        </EditableTextBlock>
-                                      )}
-                                      {activeReferenceSyncBlockId === "cta" ? (
-                                        <LinkedInReferenceEditedBlockSkeleton blockId="cta" />
-                                      ) : (
-                                        <EditableTextBlock
-                                          blockId="cta"
-                                          isSelectable={false}
-                                          showBlockToolbar={isEditModeOpen}
-                                          isSelected={false}
-                                          isThinking={blockThinkingId === "cta"}
-                                          isStreaming={blockStreamingId === "cta"}
-                                          isFading={blockFadeId === "cta"}
-                                          streamingText={streamingTarget?.blockId === "cta" ? streamingTarget.text : undefined}
-                                          onStreamingComplete={() => handleStreamingComplete("cta")}
-                                          onSelect={() => {}}
-                                          className="text-sm text-[#0077b5] font-medium"
-                                        >
-                                          {editBlockContent.cta}
-                                        </EditableTextBlock>
-                                      )}
+                                      <EditableTextBlock
+                                        blockId="headline"
+                                        isSelectable={false}
+                                        showBlockToolbar={isEditModeOpen}
+                                        isSelected={false}
+                                        isThinking={refSyncThinkingBlockId === "headline"}
+                                        isStreaming={refSyncStreamingBlockId === "headline"}
+                                        isFading={refSyncFadeBlockId === "headline"}
+                                        streamingText={refSyncStreamingTarget?.blockId === "headline" ? refSyncStreamingTarget.text : undefined}
+                                        onStreamingComplete={() => handleRefSyncStreamingComplete("headline")}
+                                        onSelect={() => {}}
+                                        className="text-sm text-[#121212] font-medium"
+                                      >
+                                        {refFrameBlockContent.headline}
+                                      </EditableTextBlock>
+                                      <EditableTextBlock
+                                        blockId="body"
+                                        isSelectable={false}
+                                        showBlockToolbar={isEditModeOpen}
+                                        isSelected={false}
+                                        isThinking={refSyncThinkingBlockId === "body"}
+                                        isStreaming={refSyncStreamingBlockId === "body"}
+                                        isFading={refSyncFadeBlockId === "body"}
+                                        streamingText={refSyncStreamingTarget?.blockId === "body" ? refSyncStreamingTarget.text : undefined}
+                                        onStreamingComplete={() => handleRefSyncStreamingComplete("body")}
+                                        onSelect={() => {}}
+                                        className="text-sm text-[#121212]"
+                                      >
+                                        {refFrameBlockContent.body}
+                                      </EditableTextBlock>
+                                      <EditableTextBlock
+                                        blockId="cta"
+                                        isSelectable={false}
+                                        showBlockToolbar={isEditModeOpen}
+                                        isSelected={false}
+                                        isThinking={refSyncThinkingBlockId === "cta"}
+                                        isStreaming={refSyncStreamingBlockId === "cta"}
+                                        isFading={refSyncFadeBlockId === "cta"}
+                                        streamingText={refSyncStreamingTarget?.blockId === "cta" ? refSyncStreamingTarget.text : undefined}
+                                        onStreamingComplete={() => handleRefSyncStreamingComplete("cta")}
+                                        onSelect={() => {}}
+                                        className="text-sm text-[#0077b5] font-medium"
+                                      >
+                                        {refFrameBlockContent.cta}
+                                      </EditableTextBlock>
                                     </div>
                                     {/* Ad Creative */}
                                     <div className="space-y-2">
@@ -4111,7 +4197,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                               >
                                 <Image src="/images/Icon%20Right.svg" alt="" width={16} height={16} className="h-4 w-4 rotate-180" aria-hidden />
                               </button>
-                              <span className="text-sm font-medium text-[#303030]">References of other accounts</span>
+                              <span className="text-sm font-medium text-[#303030]">References</span>
                             </div>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
@@ -4300,22 +4386,40 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                           <img src={FIGMA_LANDING_HERO} alt="Creative Cloud hero" className="w-full h-full object-cover" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                          {activeReferenceSyncBlockId === "headline" ? (
-                                            <LandingPageReferenceEditedBlockSkeleton blockId="headline" />
-                                          ) : (
-                                            <h4 className="mb-4 text-[28px] font-semibold leading-[1.2] text-[#121212]">
-                                              {editBlockContent.headline}
-                                            </h4>
-                                          )}
-                                          {activeReferenceSyncBlockId === "body" ? (
-                                            <div className="mb-3">
-                                              <LandingPageReferenceEditedBlockSkeleton blockId="body" />
-                                            </div>
-                                          ) : (
-                                            <p className="mb-3 text-xs leading-[1.4] text-[#303030]">
-                                              {editBlockContent.body}
-                                            </p>
-                                          )}
+                                          <div className="mb-4">
+                                            <EditableTextBlock
+                                              blockId="headline"
+                                              isSelectable={false}
+                                              showBlockToolbar={false}
+                                              isSelected={false}
+                                              isThinking={refSyncThinkingBlockId === "headline"}
+                                              isStreaming={refSyncStreamingBlockId === "headline"}
+                                              isFading={refSyncFadeBlockId === "headline"}
+                                              streamingText={refSyncStreamingTarget?.blockId === "headline" ? refSyncStreamingTarget.text : undefined}
+                                              onStreamingComplete={() => handleRefSyncStreamingComplete("headline")}
+                                              onSelect={() => {}}
+                                              className="text-[28px] font-semibold leading-[1.2] text-[#121212]"
+                                            >
+                                              {refFrameBlockContent.headline}
+                                            </EditableTextBlock>
+                                          </div>
+                                          <div className="mb-3">
+                                            <EditableTextBlock
+                                              blockId="body"
+                                              isSelectable={false}
+                                              showBlockToolbar={false}
+                                              isSelected={false}
+                                              isThinking={refSyncThinkingBlockId === "body"}
+                                              isStreaming={refSyncStreamingBlockId === "body"}
+                                              isFading={refSyncFadeBlockId === "body"}
+                                              streamingText={refSyncStreamingTarget?.blockId === "body" ? refSyncStreamingTarget.text : undefined}
+                                              onStreamingComplete={() => handleRefSyncStreamingComplete("body")}
+                                              onSelect={() => {}}
+                                              className="text-xs leading-[1.4] text-[#303030]"
+                                            >
+                                              {refFrameBlockContent.body}
+                                            </EditableTextBlock>
+                                          </div>
                                           <p className="text-xs leading-[1.4] text-[#303030]">
                                             Work smarter and faster with the industry-standard tools pros depend on.
                                           </p>
@@ -4323,11 +4427,21 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                       </div>
                                       <div>
                                         <div className="text-center mb-8">
-                                          {activeReferenceSyncBlockId === "cta" ? (
-                                            <LandingPageReferenceEditedBlockSkeleton blockId="cta" />
-                                          ) : (
-                                            <h5 className="text-[28px] leading-[1.2] font-semibold text-[#121212]">{editBlockContent.cta}</h5>
-                                          )}
+                                          <EditableTextBlock
+                                            blockId="cta"
+                                            isSelectable={false}
+                                            showBlockToolbar={false}
+                                            isSelected={false}
+                                            isThinking={refSyncThinkingBlockId === "cta"}
+                                            isStreaming={refSyncStreamingBlockId === "cta"}
+                                            isFading={refSyncFadeBlockId === "cta"}
+                                            streamingText={refSyncStreamingTarget?.blockId === "cta" ? refSyncStreamingTarget.text : undefined}
+                                            onStreamingComplete={() => handleRefSyncStreamingComplete("cta")}
+                                            onSelect={() => {}}
+                                            className="text-[28px] leading-[1.2] font-semibold text-[#121212] block"
+                                          >
+                                            {refFrameBlockContent.cta}
+                                          </EditableTextBlock>
                                           <p className="mt-2 text-sm text-[#303030]">
                                             Membership perks include tutorials, fonts, templates and more.
                                           </p>
@@ -4376,7 +4490,7 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                 />
                                 <div className="bg-white rounded-lg border border-[#eaeaea] shadow-sm h-[675px] flex flex-col min-h-0 w-full overflow-hidden">
                                   {!loadedReferenceFrames.has(companyName) && activeReferenceSyncBlockId == null ? (
-                                    /* Skeleton loader - Figma 2514:59960, #F6F6F6 */
+                                    /* Skeleton loader - Figma 2514:59960, #F6F6F6 - account selection load */
                                     <div className="flex flex-col h-full">
                                       <div className="p-4 flex flex-col gap-4 flex-shrink-0">
                                         <div className="flex gap-6 items-start">
@@ -4436,65 +4550,53 @@ export function BackgroundGradient({ onClose, onHideNav }: BackgroundGradientPro
                                       </DropdownMenu>
                                     </div>
                                     
-                                    {/* Ad Copy */}
+                                    {/* Ad Copy - ref frame: uses ref sync animation when pane opens after edit */}
                                     <div className="space-y-2">
-                                      {activeReferenceSyncBlockId === "headline" ? (
-                                        <LinkedInReferenceEditedBlockSkeleton blockId="headline" />
-                                      ) : (
-                                        <EditableTextBlock
-                                          blockId="headline"
-                                          isSelectable={false}
-                                          showBlockToolbar={isEditModeOpen}
-                                          isSelected={false}
-                                          isThinking={blockThinkingId === "headline"}
-                                          isStreaming={blockStreamingId === "headline"}
-                                          isFading={blockFadeId === "headline"}
-                                          streamingText={streamingTarget?.blockId === "headline" ? streamingTarget.text : undefined}
-                                          onStreamingComplete={() => handleStreamingComplete("headline")}
-                                          onSelect={() => {}}
-                                          className="text-sm text-[#121212] font-medium"
-                                        >
-                                          {editBlockContent.headline}
-                                        </EditableTextBlock>
-                                      )}
-                                      {activeReferenceSyncBlockId === "body" ? (
-                                        <LinkedInReferenceEditedBlockSkeleton blockId="body" />
-                                      ) : (
-                                        <EditableTextBlock
-                                          blockId="body"
-                                          isSelectable={false}
-                                          showBlockToolbar={isEditModeOpen}
-                                          isSelected={false}
-                                          isThinking={blockThinkingId === "body"}
-                                          isStreaming={blockStreamingId === "body"}
-                                          isFading={blockFadeId === "body"}
-                                          streamingText={streamingTarget?.blockId === "body" ? streamingTarget.text : undefined}
-                                          onStreamingComplete={() => handleStreamingComplete("body")}
-                                          onSelect={() => {}}
-                                          className="text-sm text-[#121212]"
-                                        >
-                                          {editBlockContent.body}
-                                        </EditableTextBlock>
-                                      )}
-                                      {activeReferenceSyncBlockId === "cta" ? (
-                                        <LinkedInReferenceEditedBlockSkeleton blockId="cta" />
-                                      ) : (
-                                        <EditableTextBlock
-                                          blockId="cta"
-                                          isSelectable={false}
-                                          showBlockToolbar={isEditModeOpen}
-                                          isSelected={false}
-                                          isThinking={blockThinkingId === "cta"}
-                                          isStreaming={blockStreamingId === "cta"}
-                                          isFading={blockFadeId === "cta"}
-                                          streamingText={streamingTarget?.blockId === "cta" ? streamingTarget.text : undefined}
-                                          onStreamingComplete={() => handleStreamingComplete("cta")}
-                                          onSelect={() => {}}
-                                          className="text-sm text-[#0077b5] font-medium"
-                                        >
-                                          {editBlockContent.cta}
-                                        </EditableTextBlock>
-                                      )}
+                                      <EditableTextBlock
+                                        blockId="headline"
+                                        isSelectable={false}
+                                        showBlockToolbar={isEditModeOpen}
+                                        isSelected={false}
+                                        isThinking={refSyncThinkingBlockId === "headline"}
+                                        isStreaming={refSyncStreamingBlockId === "headline"}
+                                        isFading={refSyncFadeBlockId === "headline"}
+                                        streamingText={refSyncStreamingTarget?.blockId === "headline" ? refSyncStreamingTarget.text : undefined}
+                                        onStreamingComplete={() => handleRefSyncStreamingComplete("headline")}
+                                        onSelect={() => {}}
+                                        className="text-sm text-[#121212] font-medium"
+                                      >
+                                        {refFrameBlockContent.headline}
+                                      </EditableTextBlock>
+                                      <EditableTextBlock
+                                        blockId="body"
+                                        isSelectable={false}
+                                        showBlockToolbar={isEditModeOpen}
+                                        isSelected={false}
+                                        isThinking={refSyncThinkingBlockId === "body"}
+                                        isStreaming={refSyncStreamingBlockId === "body"}
+                                        isFading={refSyncFadeBlockId === "body"}
+                                        streamingText={refSyncStreamingTarget?.blockId === "body" ? refSyncStreamingTarget.text : undefined}
+                                        onStreamingComplete={() => handleRefSyncStreamingComplete("body")}
+                                        onSelect={() => {}}
+                                        className="text-sm text-[#121212]"
+                                      >
+                                        {refFrameBlockContent.body}
+                                      </EditableTextBlock>
+                                      <EditableTextBlock
+                                        blockId="cta"
+                                        isSelectable={false}
+                                        showBlockToolbar={isEditModeOpen}
+                                        isSelected={false}
+                                        isThinking={refSyncThinkingBlockId === "cta"}
+                                        isStreaming={refSyncStreamingBlockId === "cta"}
+                                        isFading={refSyncFadeBlockId === "cta"}
+                                        streamingText={refSyncStreamingTarget?.blockId === "cta" ? refSyncStreamingTarget.text : undefined}
+                                        onStreamingComplete={() => handleRefSyncStreamingComplete("cta")}
+                                        onSelect={() => {}}
+                                        className="text-sm text-[#0077b5] font-medium"
+                                      >
+                                        {refFrameBlockContent.cta}
+                                      </EditableTextBlock>
                                     </div>
                                     
                                     {/* Ad Creative */}
